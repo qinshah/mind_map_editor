@@ -13,5 +13,5 @@ class EditorState {
 
   double height = 888;
 
-  late Offset origin = Offset(width / 2, height / 2);
+  late Offset origin = Offset.zero;
 }

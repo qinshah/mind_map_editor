@@ -57,7 +57,7 @@ class Xmind {
 
   Xmind({required this.root});
 
-  Xmind.empty() : root = Node(id: 'root', title: '中心节点');
+  Xmind.empty() : root = Node(id: 'root', title: '根节点');
 
   factory Xmind.fromJson(List<dynamic> json) {
     return Xmind(
