@@ -9,9 +9,11 @@ class EditorState {
 
   int scale = 100;
 
-  double width = 888;
-
-  double height = 888;
-
   late Offset origin = Offset.zero;
+
+  Size mindMapSize = Size.zero;
+
+  final minScale = 0.2;
+
+  final maxScale = 5.0;
 }

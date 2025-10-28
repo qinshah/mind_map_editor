@@ -43,4 +43,10 @@ class EditorNotifier extends ChangeNotifier {
     notifyListeners();
     state.xmind = Xmind.fromJson(jsonDecode(utf8.decode(jsonFile.content)));
   }
+
+  Future<void> updateMindMapSize(Size value) async {
+    await Future.delayed(Durations.medium1); // 防止build未结束就rebuild
+    notifyListeners();
+    state.mindMapSize = value;
+  }
 }
