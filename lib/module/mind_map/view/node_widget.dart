@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
 
 class NodeWidget extends StatelessWidget {
@@ -9,29 +10,48 @@ class NodeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final depth = node.path.length;
     final color = node.path.isEmpty
-        ? theme.colorScheme.primary
+        ? Theme.of(context).colorScheme.primary
         // 控制相同分支色调一致
         : Colors.primaries[node.path.first % Colors.primaries.length].withAlpha(
-            255 ~/ depth.clamp(1, 3), // 越深颜色越浅，3以后都一样
+            255 - 60 * (depth - 1).clamp(0, 1), // 越深颜色越浅
+          );
+    final textColor = color.computeLuminance() > 0.5
+        ? Colors.black
+        : Colors.white;
+    final theme = depth == 0
+        ? NodeTheme(
+            color: color,
+            textStyle: TextStyle(
+              color: textColor,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 10),
+          )
+        : depth == 1
+        ? NodeTheme(
+            color: color,
+            textStyle: TextStyle(
+              color: textColor,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          )
+        : NodeTheme(
+            color: color,
+            textStyle: TextStyle(color: textColor),
           );
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: theme.padding,
         decoration: BoxDecoration(
-          color: color,
+          color: theme.color,
           borderRadius: BorderRadius.circular(6),
         ),
-        child: Text(
-          node.title,
-          style: TextStyle(
-            fontSize: 14,
-            color: color.computeLuminance() > 0.5 ? Colors.black : Colors.white,
-          ),
-        ),
+        child: Text(node.title, style: theme.textStyle),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_notifier.dart';
 import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
@@ -19,15 +20,19 @@ class _MindMapState extends State<MindMap> {
   Widget build(BuildContext context) {
     final notifier = context.watch<MindMapNotifier>();
     final expanded = notifier.getExpanded(_curNode.id);
-
-    /// 递归渲染节点
+    final theme = _curNode.path.isEmpty
+        ? MindMapTheme(
+            spacingBetweenChild: 10,
+            spacingBetweenParentAndChild: 40,
+          )
+        : MindMapTheme();
     return Row(
       children: [
         // 节点卡片
         NodeWidget(_curNode, onTap: () => notifier.toggleExpand(_curNode.id)),
         // 子节点区域
         if (expanded && _curNode.childNodes.isNotEmpty) ...[
-          const SizedBox(width: 12),
+          SizedBox(width: theme.spacingBetweenParentAndChild),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: List.generate(_curNode.childNodes.length, (index) {
@@ -35,7 +40,7 @@ class _MindMapState extends State<MindMap> {
               final key = ValueKey(childNode.id);
               if (index > 0) {
                 return Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: EdgeInsets.only(top: theme.spacingBetweenChild),
                   child: MindMap(childNode, key: key),
                 );
               }
