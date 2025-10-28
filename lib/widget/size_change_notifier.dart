@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-/// 渲染完成后把 size 抛给回调
+/// 尺寸改变时回调
 class SizeChangeNotifier extends SingleChildRenderObjectWidget {
   final ValueChanged<Size> onSizeChange;
 

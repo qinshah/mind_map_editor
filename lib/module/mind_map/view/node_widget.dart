@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/model/xmind.dart';
+import 'package:mind_map_editor/data_model/xmind.dart';
 
-class MindMapNode extends StatelessWidget {
-  const MindMapNode(this.node, {super.key, this.onTap});
+class NodeWidget extends StatelessWidget {
+  const NodeWidget(this.node, {super.key, this.onTap});
 
   final VoidCallback? onTap;
   final Node node;

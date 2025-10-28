@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/editor/editor_notifier.dart';
-import 'package:mind_map_editor/editor/view/editor_hub.dart';
-import 'package:mind_map_editor/editor/view/mind_map.dart';
+import 'package:mind_map_editor/module/editor/editor_notifier.dart';
+import 'package:mind_map_editor/module/editor/view/editor_hub.dart';
+import 'package:mind_map_editor/module/mind_map/mind_map_notifier.dart';
+import 'package:mind_map_editor/module/mind_map/view/mind_map.dart';
 import 'package:mind_map_editor/widget/size_change_notifier.dart';
 import 'package:provider/provider.dart';
 
@@ -31,18 +32,16 @@ class EditorView extends StatelessWidget {
                   horizontal: hMargin,
                   vertical: vMargin,
                 ),
-                builder: (context, _) {
-                  return ColoredBox(
-                    color: Colors.white,
-                    child: SizeChangeNotifier(
-                      onSizeChange: notifier.updateMindMapSize,
-                      child: MindMap(
-                        state.xmind.root,
-                        key: ValueKey(state.xmind.hashCode),
-                      ),
+                builder: (context, _) => ChangeNotifierProvider(
+                  create: (_) => MindMapNotifier(),
+                  child: SizeChangeNotifier(
+                    onSizeChange: notifier.updateMindMapSize,
+                    child: MindMap(
+                      state.xmind.root,
+                      key: ValueKey(state.xmind.hashCode),
                     ),
-                  );
-                },
+                  ),
+                ),
               );
             },
           ),

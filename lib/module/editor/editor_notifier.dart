@@ -3,9 +3,9 @@ import 'dart:convert';
 
 import 'package:archive/archive_io.dart';
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/editor/editor_state.dart';
+import 'package:mind_map_editor/module/editor/editor_state.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:mind_map_editor/model/xmind.dart';
+import 'package:mind_map_editor/data_model/xmind.dart';
 
 class EditorNotifier extends ChangeNotifier {
   final state = EditorState();

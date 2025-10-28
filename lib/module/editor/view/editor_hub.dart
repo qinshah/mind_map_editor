@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/editor/editor_notifier.dart';
+import 'package:mind_map_editor/module/editor/editor_notifier.dart';
 import 'package:provider/provider.dart';
 
 class EditorHub extends StatelessWidget {

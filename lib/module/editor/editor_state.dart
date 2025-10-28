@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/model/xmind.dart';
+import 'package:mind_map_editor/data_model/xmind.dart';
 
 class EditorState {
   Xmind xmind = Xmind.empty();

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/editor/editor_notifier.dart';
-import 'package:mind_map_editor/editor/view/editor_view.dart';
+import 'package:mind_map_editor/module/editor/editor_notifier.dart';
+import 'package:mind_map_editor/module/editor/view/editor_view.dart';
 import 'package:provider/provider.dart';
 
 class App extends StatelessWidget {
