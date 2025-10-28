@@ -1,4 +1,5 @@
 class Node {
+  Node? parent;
   final String id;
   String title;
   bool titleUnedited;
@@ -8,6 +9,7 @@ class Node {
   List<Node> get childNodes => children?.attached ?? [];
 
   Node({
+    required this.parent,
     required this.id,
     required this.title,
     required this.path,
@@ -15,19 +17,33 @@ class Node {
     this.children,
   });
 
-  factory Node.fromJson(Map<String, dynamic> json, {required List<int> path}) {
-    return Node(
+  factory Node.fromJson(
+    Map<String, dynamic> json, {
+    required List<int> path,
+    required Node? parent,
+  }) {
+    final node = Node(
+      parent: parent,
       path: path,
       id: json['id'] as String,
       title: json['title'] as String,
       titleUnedited: json['titleUnedited'] as bool? ?? false,
-      children: json['children'] == null
-          ? null
-          : Children.fromJson(
-              json['children'] as Map<String, dynamic>,
-              parentPath: path,
-            ),
     );
+    node.children = json['children'] == null
+        ? null
+        : Children.fromJson(
+            parent: node,
+            json['children'] as Map<String, dynamic>,
+            parentPath: path,
+          );
+    return node;
+  }
+
+  bool get isFirstChild => path.last == 0;
+
+  bool get isMidChild {
+    if (parent == null) return false;
+    return path.last == parent!.childNodes.length ~/ 2;
   }
 
   Map<String, dynamic> toJson() {
@@ -48,11 +64,16 @@ class Children {
   factory Children.fromJson(
     Map<String, dynamic> json, {
     required List<int> parentPath,
+    required Node? parent,
   }) {
     final attachedMaps = json['attached'] as List;
     return Children(
       attached: List.generate(attachedMaps.length, (index) {
-        return Node.fromJson(attachedMaps[index], path: [...parentPath, index]);
+        return Node.fromJson(
+          attachedMaps[index],
+          path: [...parentPath, index],
+          parent: parent,
+        );
       }),
     );
   }
@@ -67,13 +88,15 @@ class Xmind {
 
   Xmind({required this.root});
 
-  Xmind.empty() : root = Node(id: 'root', title: '中心节点', path: []);
+  Xmind.empty()
+    : root = Node(id: 'root', title: '中心节点', path: [0], parent: null);
 
   factory Xmind.fromJson(List<dynamic> json) {
     return Xmind(
       root: Node.fromJson(
+        parent: null,
         json[0]['rootTopic'] as Map<String, dynamic>,
-        path: [],
+        path: [0],
       ),
     );
   }

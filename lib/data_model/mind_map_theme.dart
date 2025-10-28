@@ -1,13 +1,13 @@
 import 'package:flutter/painting.dart';
 
 class MindMapTheme {
-  final double spacingBetweenChild;
+  final double spacingWithBrother;
 
-  final double spacingBetweenParentAndChild;
+  final double spacingWithParent;
 
   const MindMapTheme({
-    this.spacingBetweenChild = 3,
-    this.spacingBetweenParentAndChild = 20,
+    this.spacingWithBrother = 4,
+    this.spacingWithParent = 20,
   });
 }
 
@@ -21,6 +21,6 @@ class NodeTheme {
   const NodeTheme({
     this.textStyle,
     this.color,
-    this.padding = const EdgeInsets.all(8),
+    this.padding = const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
   });
 }

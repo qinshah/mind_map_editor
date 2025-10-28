@@ -11,16 +11,17 @@ class NodeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final depth = node.path.length;
-    final color = node.path.isEmpty
+    final color = depth == 1
         ? Theme.of(context).colorScheme.primary
         // 控制相同分支色调一致
-        : Colors.primaries[node.path.first % Colors.primaries.length].withAlpha(
-            255 - 60 * (depth - 1).clamp(0, 1), // 越深颜色越浅
+        : Colors.primaries[node.path[1] % Colors.primaries.length].withAlpha(
+            255 - 60 * (depth - 2).clamp(0, 1), // 越深颜色越浅
           );
     final textColor = color.computeLuminance() > 0.5
         ? Colors.black
         : Colors.white;
-    final theme = depth == 0
+    final theme = depth == 1
+        // 根节点
         ? NodeTheme(
             color: color,
             textStyle: TextStyle(
@@ -28,11 +29,13 @@ class NodeWidget extends StatelessWidget {
               fontSize: 24,
               fontWeight: FontWeight.w800,
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
           )
-        : depth == 1
+        : depth == 2
+        // 一级分支节点
         ? NodeTheme(
             color: color,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             textStyle: TextStyle(
               color: textColor,
               fontSize: 18,
