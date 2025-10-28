@@ -1,0 +1,84 @@
+[
+    {
+        "rootTopic": {
+            "id": "a81aaf27-912e-45dd-ae58-e1afe91a4a62",
+            "title": "中心主题",
+            "titleUnedited": true,
+            "children": {
+                "attached": [
+                    {
+                        "id": "4b645861-be64-472d-8731-0f16695ed994",
+                        "title": "分支主题 1",
+                        "titleUnedited": true,
+                        "children": {
+                            "attached": [
+                                {
+                                    "id": "8a3c84a3-1f78-40a1-a9c9-6e276e9dee79",
+                                    "title": "细分主题 1",
+                                    "titleUnedited": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": "59aba10d-0b18-4f00-a99a-b7d65ebe838a",
+                        "title": "分支主题 2",
+                        "titleUnedited": true,
+                        "children": {
+                            "attached": [
+                                {
+                                    "id": "df288b96-d3fc-422b-bd48-9b6c120a6641",
+                                    "title": "细分主题 1",
+                                    "titleUnedited": true,
+                                    "children": {
+                                        "attached": [
+                                            {
+                                                "id": "e0afc428-7953-4c19-8f27-9e04990abe95",
+                                                "title": "细分主题 1",
+                                                "titleUnedited": true
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "id": "d93ef7d8-f7c5-45b3-987c-3fc979b3779d",
+                                    "title": "细分主题 2",
+                                    "titleUnedited": true
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "id": "45a1a912-fefd-4351-beb8-05a4ce646171",
+                        "title": "分支主题 3",
+                        "titleUnedited": true,
+                        "children": {
+                            "attached": [
+                                {
+                                    "id": "7bbe4c53-c0c4-4853-be9a-97548ba7af1c",
+                                    "title": "细分主题 1",
+                                    "titleUnedited": true
+                                },
+                                {
+                                    "id": "683957f6-9a16-4581-9ee0-f88fdde5c167",
+                                    "title": "细分主题 2",
+                                    "titleUnedited": true
+                                },
+                                {
+                                    "id": "bcfc2fd4-1628-47cd-adfe-6cb434a709d6",
+                                    "title": "细分主题 3",
+                                    "titleUnedited": true
+                                },
+                                {
+                                    "id": "c7b25918-98b9-40d2-9487-fe61ed4a04b2",
+                                    "title": "细分主题 4",
+                                    "titleUnedited": true
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+]

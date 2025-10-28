@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/editor/editor_state.dart';
+import 'package:mind_map_editor/editor/editor_notifier.dart';
+import 'package:provider/provider.dart';
 
 class EditorHub extends StatelessWidget {
-  const EditorHub({super.key, required this.state});
-
-  final EditorState state;
+  const EditorHub({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final notifier = context.watch<EditorNotifier>();
+    final state = notifier.state;
     return Stack(
       alignment: Alignment.center,
       children: [
         Positioned(
           top: 10,
           left: 10,
-          child: TextButton(onPressed: () {}, child: Text('导入xmind')),
+          child: TextButton(
+            onPressed: notifier.importXmind,
+            child: Text('导入xmind'),
+          ),
         ),
-        if (state.scaling)
+        if (state.scaleHubTimer.isActive)
           Positioned(
             top: 10,
             child: Card(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mind_map_editor/editor/editor_notifier.dart';
 import 'package:mind_map_editor/editor/view/editor_hub.dart';
+import 'package:mind_map_editor/editor/view/mind_map.dart';
 import 'package:provider/provider.dart';
 
 class EditorView extends StatelessWidget {
@@ -16,7 +17,6 @@ class EditorView extends StatelessWidget {
         children: [
           InteractiveViewer.builder(
             onInteractionUpdate: notifier.updateScale,
-            onInteractionEnd: notifier.endScale,
             transformationController: notifier.tCntlr,
             minScale: 0.5,
             boundaryMargin: EdgeInsets.all(1500),
@@ -24,14 +24,19 @@ class EditorView extends StatelessWidget {
               return Stack(
                 children: [
                   ColoredBox(
-                    color: Colors.green.shade100,
-                    child: SizedBox(width: 300, height: 300),
+                    color: Theme.of(context).secondaryHeaderColor,
+                    child: SizedBox(width: state.width, height: state.height),
+                  ),
+                  Positioned(
+                    top: state.origin.dy,
+                    left: state.origin.dx,
+                    child: MindMap(state.xmind.root),
                   ),
                 ],
               );
             },
           ),
-          EditorHub(state: state),
+          EditorHub(),
         ],
       ),
     );
