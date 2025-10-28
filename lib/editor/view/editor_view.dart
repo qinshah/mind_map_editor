@@ -1,42 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/editor/editor_state.dart';
+import 'package:mind_map_editor/editor/editor_notifier.dart';
 import 'package:mind_map_editor/editor/view/editor_hub.dart';
+import 'package:provider/provider.dart';
 
-class EditorView extends StatefulWidget {
+class EditorView extends StatelessWidget {
   const EditorView({super.key});
 
   @override
-  State<EditorView> createState() => _EditorViewState();
-}
-
-class _EditorViewState extends State<EditorView> {
-  final _state = EditorState();
-  final _cntlr = TransformationController();
-  late ThemeData _theme;
-
-  void _updateScale(ScaleUpdateDetails details) {
-    final scale = (_cntlr.value.getMaxScaleOnAxis() * 100).round();
-    if (scale == _state.scale) return;
-    setState(() {
-      _state.scale = scale;
-      _state.scaling = true;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    _theme = Theme.of(context);
+    final notifier = context.watch<EditorNotifier>();
+    final state = notifier.state;
     return Scaffold(
       appBar: AppBar(toolbarHeight: 0),
       body: Stack(
         children: [
           InteractiveViewer.builder(
-            onInteractionUpdate: _updateScale,
-            onInteractionEnd: (_) async {
-              await Future.delayed(Durations.medium1);
-              setState(() => _state.scaling = false);
-            },
-            transformationController: _cntlr,
+            onInteractionUpdate: notifier.updateScale,
+            onInteractionEnd: notifier.endScale,
+            transformationController: notifier.tCntlr,
             minScale: 0.5,
             boundaryMargin: EdgeInsets.all(1500),
             builder: (context, _) {
@@ -50,7 +31,7 @@ class _EditorViewState extends State<EditorView> {
               );
             },
           ),
-          EditorHub(state: _state),
+          EditorHub(state: state),
         ],
       ),
     );

@@ -12,6 +12,11 @@ class EditorHub extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
+        Positioned(
+          top: 10,
+          left: 10,
+          child: TextButton(onPressed: () {}, child: Text('导入xmind')),
+        ),
         if (state.scaling)
           Positioned(
             top: 10,
