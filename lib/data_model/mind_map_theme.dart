@@ -3,11 +3,14 @@ import 'package:flutter/painting.dart';
 class MindMapTheme {
   final double spacingWithBrother;
 
+  final double spacingWithChild;
+
   final double spacingWithParent;
 
   const MindMapTheme({
     this.spacingWithBrother = 4,
-    this.spacingWithParent = 20,
+    this.spacingWithChild = 10,
+    this.spacingWithParent = 10,
   });
 }
 
