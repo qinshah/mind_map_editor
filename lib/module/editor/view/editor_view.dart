@@ -22,19 +22,19 @@ class EditorView extends StatelessWidget {
               final logicSize = constraints.biggest / state.minScale;
               final hMargin = (logicSize.width - state.mindMapSize.width) / 2;
               final vMargin = (logicSize.height - state.mindMapSize.height) / 2;
-              return InteractiveViewer.builder(
-                onInteractionUpdate: notifier.updateScale,
-                transformationController: notifier.tCntlr,
-                minScale: state.minScale,
-                maxScale: state.maxScale,
-                // 让最小倍数时刚好填满视口
-                boundaryMargin: EdgeInsets.symmetric(
-                  horizontal: hMargin,
-                  vertical: vMargin,
-                ),
-                builder: (context, _) => ChangeNotifierProvider(
-                  create: (_) => MindMapNotifier(),
-                  child: SizeChangeNotifier(
+              return ChangeNotifierProvider(
+                create: (_) => MindMapNotifier(),
+                child: InteractiveViewer.builder(
+                  onInteractionUpdate: notifier.updateScale,
+                  transformationController: notifier.tCntlr,
+                  minScale: state.minScale,
+                  maxScale: state.maxScale,
+                  // 让最小倍数时刚好填满视口
+                  boundaryMargin: EdgeInsets.symmetric(
+                    horizontal: hMargin,
+                    vertical: vMargin,
+                  ),
+                  builder: (context, _) => SizeChangeNotifier(
                     onSizeChange: notifier.updateMindMapSize,
                     child: MindMap(
                       state.xmind.root,
