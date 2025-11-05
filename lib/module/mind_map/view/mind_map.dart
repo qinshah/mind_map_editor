@@ -14,79 +14,79 @@ class MindMap extends StatefulWidget {
 }
 
 class _MindMapState extends State<MindMap> {
-  Node get node => widget.rootNode;
+  Node get rootNode => widget.rootNode;
 
   @override
   Widget build(BuildContext context) {
     final dividerColor = Theme.of(context).colorScheme.onSurface;
     final notifier = context.watch<MindMapNotifier>();
-    final depth = node.path.length;
+    final depth = rootNode.path.length;
     final theme = depth == 1
         // 根节点
-        ? MindMapTheme(
-            spacingWithBrother: 0,
-            spacingWithChild: 20,
-            spacingWithParent: 0,
-          )
+        ? MindMapTheme(spacingBetweenChild: 20, spacingWithChild: 40)
         : depth == 2
         // 根节点的子节点
-        ? MindMapTheme(
-            spacingWithBrother: 20,
-            spacingWithChild: 10,
-            spacingWithParent: 20,
-          )
+        ? MindMapTheme(spacingBetweenChild: 10, spacingWithChild: 30)
         // 后面的节点
         : MindMapTheme();
-    final nodeKey = Key(node.id);
-    return Stack(
-      children: [
-        Container(
-          // color: Colors.primaries[node.hashCode % Colors.primaries.length]
-          //     .withAlpha(100),
-          padding: EdgeInsets.only(
-            // 与前一个兄弟节点之间
-            top: node.isFirstChild ? 0 : theme.spacingWithBrother,
+    return Container(
+      color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
+          .withAlpha(50),
+      child: Row(
+        children: [
+          // 根节点卡片
+          NodeWidget(
+            key: Key(rootNode.id),
+            rootNode,
+            onTap: () => notifier.toggleExpand(rootNode.id),
           ),
-          child: Row(
-            children: [
-              // 与父节点之间连线
-              SizedBox(
-                width: theme.spacingWithParent,
-                child: Divider(color: dividerColor),
-              ),
-              // 根节点卡片
-              NodeWidget(
-                key: nodeKey,
-                node,
-                onTap: () => notifier.toggleExpand(node.id),
-              ),
-              if (notifier.getExpanded(node.id) &&
-                  node.childNodes.isNotEmpty) ...[
-                // 与子节点之间连线
-                SizedBox(
-                  width: theme.spacingWithChild,
-                  child: Divider(color: dividerColor),
-                ),
-                // 子节点区域
+          if (notifier.getExpanded(rootNode.id) &&
+              rootNode.childNodes.isNotEmpty) ...[
+            // 根节点与子节点间的左半区域
+            // 绘制从根节点出发的横线
+            SizedBox(
+              width: theme.spacingWithChild / 2,
+              child: Divider(color: dividerColor),
+            ),
+            Stack(
+              children: [
+                VerticalDivider(color: dividerColor),
+                // 所有子树
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: List.generate(node.childNodes.length, (index) {
-                    final childNode = node.childNodes[index];
-                    return MindMap(childNode);
+                  children: List.generate(rootNode.childNodes.length, (index) {
+                    final childNode = rootNode.childNodes[index];
+                    return Padding(
+                      padding: index == 0
+                          ? EdgeInsets.zero
+                          // 该子节点与前一个子节点之间
+                          : EdgeInsets.only(top: theme.spacingBetweenChild),
+                      child: Row(
+                        children: [
+                          // 根节点与子节点间的右半区域
+                          // 绘制到子节点的横线
+                          SizedBox(
+                            width: theme.spacingWithChild / 2,
+                            child: Divider(color: dividerColor),
+                          ),
+                          MindMap(childNode),
+                        ],
+                      ),
+                    );
                   }),
                 ),
+                // 根节点与子节点之间的中间位置，绘制竖线
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  width: 1,
+                  child: VerticalDivider(color: dividerColor),
+                ),
               ],
-            ],
-          ),
-        ),
-        if (depth > 1)
-          Positioned(
-            top: 0,
-            bottom: 0,
-            width: 1,
-            child: VerticalDivider(color: dividerColor),
-          ),
-      ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
