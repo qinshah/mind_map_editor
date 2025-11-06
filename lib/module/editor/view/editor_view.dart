@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/editor/editor_notifier.dart';
 import 'package:mind_map_editor/module/editor/view/editor_hub.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_notifier.dart';
 import 'package:mind_map_editor/module/mind_map/view/mind_map.dart';
+import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
 import 'package:mind_map_editor/widget/size_change_notifier.dart';
 import 'package:provider/provider.dart';
 
-class EditorView extends StatelessWidget {
+class EditorView extends StatefulWidget {
   const EditorView({super.key});
+
+  @override
+  State<EditorView> createState() => _EditorViewState();
+}
+
+class _EditorViewState extends State<EditorView> {
+  final _mindMapNotifier = MindMapNotifier();
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +31,8 @@ class EditorView extends StatelessWidget {
               final logicSize = constraints.biggest / state.minScale;
               final hMargin = (logicSize.width - state.mindMapSize.width) / 2;
               final vMargin = (logicSize.height - state.mindMapSize.height) / 2;
-              return ChangeNotifierProvider(
-                create: (_) => MindMapNotifier(),
+              return ChangeNotifierProvider.value(
+                value: _mindMapNotifier,
                 child: InteractiveViewer.builder(
                   onInteractionUpdate: notifier.updateScale,
                   transformationController: notifier.tCntlr,
@@ -37,8 +46,14 @@ class EditorView extends StatelessWidget {
                   builder: (context, _) => SizeChangeNotifier(
                     onSizeChange: notifier.updateMindMapSize,
                     child: MindMap(
-                      state.xmind.root,
+                      rootNode: state.xmind.root,
                       key: ValueKey(state.xmind.hashCode),
+                      rootNodeBuilder: (Node node) {
+                        return NodeWidget(
+                          node,
+                          onTap: () => _mindMapNotifier.toggleExpand(node.id),
+                        );
+                      },
                     ),
                   ),
                 ),

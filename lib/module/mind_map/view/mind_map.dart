@@ -1,133 +1,140 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_notifier.dart';
-import 'package:mind_map_editor/module/mind_map/view/line_painter.dart';
-import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:provider/provider.dart';
 
-class MindMap extends StatefulWidget {
+class MindMap extends StatelessWidget {
+  const MindMap({
+    super.key,
+    required this.rootNodeBuilder,
+    required this.rootNode,
+    this.childNodeBuilder,
+  });
+
   final Node rootNode;
-  const MindMap(this.rootNode, {super.key});
 
-  @override
-  State<MindMap> createState() => _MindMapState();
-}
+  final Widget Function(Node node) rootNodeBuilder;
 
-class _MindMapState extends State<MindMap> {
-  Node get rootNode => widget.rootNode;
-  final _nodeKey = GlobalKey();
-  Offset _nodeOut = Offset.zero;
-  final List<Offset> _childIn = [];
-  final List<GlobalKey> _childKeys = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _childKeys.addAll(rootNode.childNodes.map((e) => GlobalKey()));
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updatePoints());
-  }
-
-  @override
-  void didUpdateWidget(covariant MindMap oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.rootNode.childNodes.length != rootNode.childNodes.length) {
-      _childKeys.clear();
-      _childKeys.addAll(rootNode.childNodes.map((e) => GlobalKey()));
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updatePoints());
-  }
-
-  Future<void> _updatePoints() async {
-    final notifier = context.read<MindMapNotifier>();
-    if (!mounted) return;
-    if (!notifier.getExpanded(rootNode.id)) {
-      if (_childIn.isNotEmpty) {
-        setState(() {
-          _childIn.clear();
-        });
-      }
-      return;
-    }
-    final nodeRenderBox = _nodeKey.currentContext?.findRenderObject() as RenderBox?;
-    if (nodeRenderBox == null) return;
-
-    final nodeOut = nodeRenderBox.localToGlobal(Offset(nodeRenderBox.size.width, nodeRenderBox.size.height / 2));
-
-    final childIn = <Offset>[];
-    for (var key in _childKeys) {
-      final childRenderBox = key.currentContext?.findRenderObject() as RenderBox?;
-      if (childRenderBox == null) continue;
-      final childInOffset = childRenderBox.localToGlobal(Offset(0, childRenderBox.size.height / 2));
-      childIn.add(childInOffset);
-    }
-
-    final stackRenderBox = context.findRenderObject() as RenderBox;
-    final newNodeOut = stackRenderBox.globalToLocal(nodeOut);
-    final newChildIn = childIn.map((e) => stackRenderBox.globalToLocal(e)).toList();
-
-    if (newNodeOut != _nodeOut ||
-        _childIn.length != newChildIn.length ||
-        _childIn.toString() != newChildIn.toString()) {
-      setState(() {
-        _nodeOut = newNodeOut;
-        _childIn.clear();
-        _childIn.addAll(newChildIn);
-      });
-    }
-  }
+  final Widget Function(Node node)? childNodeBuilder;
 
   @override
   Widget build(BuildContext context) {
     final notifier = context.watch<MindMapNotifier>();
     final depth = rootNode.path.length;
     final theme = depth == 1
+        // 根节点
         ? MindMapTheme(spacingBetweenChild: 20, spacingWithChild: 40)
         : depth == 2
+        // 根节点的子节点
         ? MindMapTheme(spacingBetweenChild: 10, spacingWithChild: 30)
+        // 后续节点
         : MindMapTheme();
-
-    return Stack(
-      children: [
-        if (_childIn.isNotEmpty)
-          CustomPaint(
-            painter: LinePainter(
-              context: context,
-              start: _nodeOut,
-              ends: _childIn,
-            ),
-          ),
-        Row(
-          children: [
-            NodeWidget( rootNode,
-              key: _nodeKey,
-              onTap: () {
-                notifier.toggleExpand(rootNode.id);
-              },
-            ),
-            if (notifier.getExpanded(rootNode.id) && rootNode.childNodes.isNotEmpty) ...[
-              SizedBox(width: theme.spacingWithChild),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: List.generate(rootNode.childNodes.length, (index) {
-                  final childNode = rootNode.childNodes[index];
-                  return Padding(
-                    padding: index == 0
-                        ? EdgeInsets.zero
-                        : EdgeInsets.only(top: theme.spacingBetweenChild),
-                    child: MindMap(
-                      childNode,
-                      key: _childKeys[index],
-                    ),
-                  );
-                }),
-              ),
-            ],
-          ],
-        ),
-      ],
+    final isExpanded = notifier.getExpanded(rootNode.id);
+    return Container(
+      // color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
+      //     .withAlpha(66),
+      child: RenderMindMapWidget(
+        key: Key('${rootNode.id}：isExpanded：$isExpanded'),
+        rootNodeWidget: rootNodeBuilder(rootNode),
+        subtree: isExpanded
+            ? List.generate(rootNode.childNodes.length, (index) {
+                final nextRootNode = rootNode.childNodes[index];
+                return MindMap(
+                  rootNodeBuilder: childNodeBuilder ?? rootNodeBuilder,
+                  rootNode: nextRootNode,
+                );
+              })
+            : [],
+      ),
     );
   }
+}
+
+class RenderMindMapWidget extends MultiChildRenderObjectWidget {
+  const RenderMindMapWidget({
+    required super.key,
+    required this.rootNodeWidget,
+    required this.subtree,
+  });
+
+  @override
+  List<Widget> get children => [rootNodeWidget, ...subtree];
+
+  final Widget rootNodeWidget;
+  final List<MindMap> subtree;
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return RenderMindMap();
+  }
+}
+
+class RenderMindMap extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, MindMapParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, MindMapParentData> {
+  @override
+  void setupParentData(RenderObject child) {
+    if (child.parentData is! MindMapParentData) {
+      child.parentData = MindMapParentData();
+    }
+  }
+
+  @override
+  void performLayout() {
+    final rootNode = firstChild!;
+    rootNode.layout(constraints, parentUsesSize: true);
+    final rootNodeSize = rootNode.size;
+    RenderBox? childTree = childAfter(rootNode);
+    double maxChildWidth = 0;
+    double childrenHeight = 0;
+    double childTreeTranslateY = 0;
+    for (; childTree != null; childTree = childAfter(childTree)) {
+      childTree.layout(constraints, parentUsesSize: true);
+      (childTree.parentData as MindMapParentData).offset = Offset(
+        rootNodeSize.width,
+        childTreeTranslateY,
+      );
+      childTreeTranslateY += childTree.size.height;
+      childrenHeight += childTree.size.height;
+      if (childTree.size.width > maxChildWidth) {
+        maxChildWidth = childTree.size.width;
+      }
+    }
+    final width = rootNodeSize.width + maxChildWidth;
+    if (childrenHeight > rootNodeSize.height) {
+      size = Size(width, childrenHeight);
+      (rootNode.parentData as MindMapParentData).offset = Offset(
+        0,
+        (childrenHeight - rootNodeSize.height) / 2,
+      );
+    } else {
+      size = Size(width, rootNodeSize.height);
+      final moreTranslateY = (rootNodeSize.height - childrenHeight) / 2;
+      childTree = childAfter(rootNode);
+      for (; childTree != null; childTree = childAfter(childTree)) {
+        (childTree.parentData as MindMapParentData).offset += Offset(
+          0,
+          moreTranslateY,
+        );
+      }
+    }
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    defaultPaint(context, offset);
+  }
+  // RenderFlex f;
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    return defaultHitTestChildren(result, position: position);
+  }
+}
+
+class MindMapParentData extends ContainerBoxParentData<RenderBox> {
+  @override
+  String toString() => 'MindMap: ${super.toString()}';
 }

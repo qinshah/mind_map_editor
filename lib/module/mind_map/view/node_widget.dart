@@ -46,7 +46,7 @@ class NodeWidget extends StatelessWidget {
             color: color,
             textStyle: TextStyle(color: textColor),
           );
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
       child: Container(
         padding: theme.padding,
