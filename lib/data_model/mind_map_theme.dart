@@ -1,13 +1,13 @@
 import 'package:flutter/painting.dart';
 
 class MindMapTheme {
-  final double spacingBetweenChild;
+  final double spacingBetweenSubTree;
 
-  final double spacingWithChild;
+  final double spacingWithSubTree;
 
   const MindMapTheme({
-    this.spacingBetweenChild = 4,
-    this.spacingWithChild = 20,
+    this.spacingBetweenSubTree = 4,
+    this.spacingWithSubTree = 20,
   });
 }
 

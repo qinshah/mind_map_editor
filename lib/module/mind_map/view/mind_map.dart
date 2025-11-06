@@ -5,45 +5,57 @@ import 'package:mind_map_editor/module/mind_map/mind_map_notifier.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:provider/provider.dart';
 
+typedef NodeBuilder = Widget Function(Node node, int depth, int indexInBrother);
+
+typedef ThemeBuilder = MindMapTheme Function(int depth);
+
 class MindMap extends StatelessWidget {
   const MindMap({
     super.key,
-    required this.rootNodeBuilder,
+    required this.nodeBuilder,
     required this.rootNode,
-    this.childNodeBuilder,
+    required this.depth,
+    required this.indexInBrother,
+    required this.themeBuilder,
   });
+
+  const MindMap.root({
+    required super.key,
+    required this.nodeBuilder,
+    required this.rootNode,
+    required this.themeBuilder,
+  }) : depth = 0,
+       indexInBrother = 0;
 
   final Node rootNode;
 
-  final Widget Function(Node node) rootNodeBuilder;
+  final int depth;
+  final int indexInBrother;
 
-  final Widget Function(Node node)? childNodeBuilder;
+  final NodeBuilder nodeBuilder;
+
+  final ThemeBuilder themeBuilder;
 
   @override
   Widget build(BuildContext context) {
     final notifier = context.watch<MindMapNotifier>();
-    final depth = rootNode.path.length;
-    final theme = depth == 1
-        // 根节点
-        ? MindMapTheme(spacingBetweenChild: 20, spacingWithChild: 40)
-        : depth == 2
-        // 根节点的子节点
-        ? MindMapTheme(spacingBetweenChild: 10, spacingWithChild: 30)
-        // 后续节点
-        : MindMapTheme();
     final isExpanded = notifier.getExpanded(rootNode.id);
     return Container(
       color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
           .withAlpha(66),
       child: RenderMindMapWidget(
+        theme: themeBuilder(depth),
         key: Key('${rootNode.id}：isExpanded：$isExpanded'),
-        rootNodeWidget: rootNodeBuilder(rootNode),
+        rootNodeWidget: nodeBuilder(rootNode, depth, indexInBrother),
         subtrees: isExpanded
             ? List.generate(rootNode.childNodes.length, (index) {
                 final nextRootNode = rootNode.childNodes[index];
                 return MindMap(
-                  rootNodeBuilder: childNodeBuilder ?? rootNodeBuilder,
+                  themeBuilder: themeBuilder,
+                  nodeBuilder: nodeBuilder,
                   rootNode: nextRootNode,
+                  depth: depth + 1,
+                  indexInBrother: index,
                 );
               })
             : [],
@@ -54,19 +66,23 @@ class MindMap extends StatelessWidget {
 
 class RenderMindMapWidget extends MultiChildRenderObjectWidget {
   const RenderMindMapWidget({
+    required this.theme,
     required super.key,
     required this.rootNodeWidget,
     required this.subtrees,
   });
 
+  final MindMapTheme theme;
+
   @override
   List<Widget> get children => [rootNodeWidget, ...subtrees];
 
   final Widget rootNodeWidget;
+
   final List<MindMap> subtrees;
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return RenderMindMap();
+    return RenderMindMap(theme: theme);
   }
 }
 
@@ -81,6 +97,10 @@ class RenderMindMap extends RenderBox
     }
   }
 
+  final MindMapTheme theme;
+
+  RenderMindMap({required this.theme});
+
   @override
   void performLayout() {
     final rootNode = firstChild!;
@@ -90,19 +110,20 @@ class RenderMindMap extends RenderBox
     RenderBox? subTree = rNParentData.nextSibling;
     double maxChildWidth = 0;
     double childrenHeight = 0;
-    double childTreeTranslateY = 0;
+    double subTreeYOffset = 0;
+    final subTreeXOffset = rootNodeSize.width + theme.spacingWithSubTree;
     while (subTree != null) {
       final parentData = subTree.parentData as MindMapParentData;
       subTree.layout(constraints, parentUsesSize: true);
-      parentData.offset = Offset(rootNodeSize.width, childTreeTranslateY);
-      childTreeTranslateY += subTree.size.height;
-      childrenHeight += subTree.size.height;
+      parentData.offset = Offset(subTreeXOffset, subTreeYOffset);
+      subTreeYOffset += subTree.size.height + theme.spacingBetweenSubTree;
+      childrenHeight += subTree.size.height + theme.spacingBetweenSubTree;
       if (subTree.size.width > maxChildWidth) {
         maxChildWidth = subTree.size.width;
       }
       subTree = parentData.nextSibling;
     }
-    final width = rootNodeSize.width + maxChildWidth;
+    final width = subTreeXOffset + maxChildWidth;
     if (childrenHeight > rootNodeSize.height) {
       size = Size(width, childrenHeight);
       rNParentData.offset = Offset(
@@ -126,14 +147,14 @@ class RenderMindMap extends RenderBox
     final rootNode = firstChild!;
     final rNParentData = rootNode.parentData as MindMapParentData;
     context.paintChild(rootNode, rNParentData.offset + offset);
-    RenderBox? subtree = childAfter(rootNode);
+    RenderBox? subtree = rNParentData.nextSibling;
     while (subtree != null) {
       final parentData = subtree.parentData as MindMapParentData;
       context.paintChild(subtree, parentData.offset + offset);
       subtree = parentData.nextSibling;
     }
   }
-  
+
   // RenderFlex f;
 
   @override

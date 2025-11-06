@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/editor/editor_notifier.dart';
 import 'package:mind_map_editor/module/editor/view/editor_hub.dart';
@@ -45,15 +46,18 @@ class _EditorViewState extends State<EditorView> {
                   ),
                   builder: (context, _) => SizeChangeNotifier(
                     onSizeChange: notifier.updateMindMapSize,
-                    child: MindMap(
+                    child: MindMap.root(
                       rootNode: state.xmind.root,
                       key: ValueKey(state.xmind.hashCode),
-                      rootNodeBuilder: (Node node) {
+                      nodeBuilder: (Node node, int depth, int indexOfDepth) {
                         return NodeWidget(
                           node,
-                          onTap: () => _mindMapNotifier.toggleExpand(node.id),
+                          onTap: node.childNodes.isEmpty
+                              ? null
+                              : () => _mindMapNotifier.toggleExpand(node.id),
                         );
                       },
+                      themeBuilder: _buildTheme,
                     ),
                   ),
                 ),
@@ -65,4 +69,13 @@ class _EditorViewState extends State<EditorView> {
       ),
     );
   }
+
+  MindMapTheme _buildTheme(int depth) => switch (depth) {
+    // 根节点
+    0 => MindMapTheme(spacingBetweenSubTree: 20, spacingWithSubTree: 40),
+    // 根节点的子节点
+    1 => MindMapTheme(spacingBetweenSubTree: 10, spacingWithSubTree: 30),
+    // 后续节点
+    int() => MindMapTheme(),
+  };
 }
