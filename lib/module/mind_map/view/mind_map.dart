@@ -38,8 +38,6 @@ class MindMap extends StatelessWidget {
 
   final ThemeBuilder themeBuilder;
 
-  final expandButtonSize = 16.0;
-
   @override
   Widget build(BuildContext context) {
     final notifier = context.watch<MindMapNotifier>();
@@ -47,8 +45,8 @@ class MindMap extends StatelessWidget {
     final childCount = rootNode.childNodes.length;
     final showExpandButton = rootNode.childNodes.isNotEmpty;
     return Container(
-      color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
-          .withAlpha(66),
+      // color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
+      //     .withAlpha(66),
       child: RenderMindMapWidget(
         theme: themeBuilder(depth),
         key: UniqueKey(),
@@ -59,7 +57,6 @@ class MindMap extends StatelessWidget {
                   notifier.toggleExpand(rootNode.id);
                 },
                 childCount: childCount,
-                size: expandButtonSize,
               )
             : SizedBox(),
         subtrees: !expanded
@@ -80,19 +77,20 @@ class MindMap extends StatelessWidget {
     );
   }
 
+  static const expandButtonSize = 16.0;
+
   // TODO 展开按钮放到节点处理
   static Widget _buildExpandButton({
     required VoidCallback onTap,
     required int childCount,
-    required double size,
   }) {
     return SizedBox(
-      width: size,
-      height: size,
+      width: expandButtonSize,
+      height: expandButtonSize,
       child: Ink(
         decoration: BoxDecoration(color: Colors.teal, shape: BoxShape.circle),
         child: InkWell(
-          borderRadius: BorderRadius.circular(size / 2),
+          borderRadius: BorderRadius.circular(expandButtonSize / 2),
           onTap: onTap,
           child: Center(
             child: Text('$childCount', style: TextStyle(fontSize: 10)),

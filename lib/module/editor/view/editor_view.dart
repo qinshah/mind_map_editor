@@ -46,19 +46,15 @@ class _EditorViewState extends State<EditorView> {
                   ),
                   builder: (context, _) => SizeChangeNotifier(
                     onSizeChange: notifier.updateMindMapSize,
-                    child: MindMap.root(
-                      rootNode: state.xmind.root,
-                      key: ValueKey(state.xmind.hashCode),
-                      nodeBuilder: (Node node, int depth, int indexOfDepth) {
-                        return NodeWidget(
-                          node,
-                          onTap: () {
-                            if (node.childNodes.isEmpty) return;
-                            _mindMapNotifier.toggleExpand(node.id);
-                          },
-                        );
-                      },
-                      themeBuilder: _buildTheme,
+                    child: FocusScope(
+                      child: MindMap.root(
+                        rootNode: state.xmind.root,
+                        key: ValueKey(state.xmind.hashCode),
+                        nodeBuilder: (Node node, int depth, int indexOfDepth) {
+                          return NodeWidget(node, onTap: () {});
+                        },
+                        themeBuilder: _buildTheme,
+                      ),
                     ),
                   ),
                 ),
