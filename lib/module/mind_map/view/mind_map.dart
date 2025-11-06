@@ -6,7 +6,8 @@ import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
 import 'package:provider/provider.dart';
 
-typedef NodeBuilder = NodeWidget Function(Node node, int depth, int indexInBrother);
+typedef NodeBuilder =
+    NodeWidget Function(Node node, int depth, int indexInBrother);
 
 typedef ThemeBuilder = MindMapTheme Function(int depth);
 
@@ -42,11 +43,11 @@ class MindMap extends StatelessWidget {
     final notifier = context.watch<MindMapNotifier>();
     final isExpanded = notifier.getExpanded(rootNode.id);
     return Container(
-      // color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
-      //     .withAlpha(66),
+      color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
+          .withAlpha(66),
       child: RenderMindMapWidget(
         theme: themeBuilder(depth),
-        key: Key('${rootNode.id}：isExpanded：$isExpanded'),
+        key: UniqueKey(),
         rootNodeWidget: nodeBuilder(rootNode, depth, indexInBrother),
         subtrees: isExpanded
             ? List.generate(rootNode.childNodes.length, (index) {
@@ -113,6 +114,7 @@ class RenderMindMap extends RenderBox
     double childrenHeight = 0;
     double subTreeYOffset = 0;
     final subTreeXOffset = rootNodeSize.width + theme.spacingWithSubTree;
+    final leftWidth = subTree == null ? rootNodeSize.width : subTreeXOffset;
     while (subTree != null) {
       final parentData = subTree.parentData as MindMapParentData;
       subTree.layout(constraints, parentUsesSize: true);
@@ -126,7 +128,7 @@ class RenderMindMap extends RenderBox
       if (nextSubTree != null) childrenHeight += theme.spacingBetweenSubTree;
       subTree = nextSubTree;
     }
-    final width = subTreeXOffset + maxChildWidth;
+    final width = leftWidth + maxChildWidth;
     if (childrenHeight > rootNodeSize.height) {
       size = Size(width, childrenHeight);
       rNParentData.offset = Offset(
