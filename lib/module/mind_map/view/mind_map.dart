@@ -38,10 +38,14 @@ class MindMap extends StatelessWidget {
 
   final ThemeBuilder themeBuilder;
 
+  final expandButtonSize = 16.0;
+
   @override
   Widget build(BuildContext context) {
     final notifier = context.watch<MindMapNotifier>();
-    final isExpanded = notifier.getExpanded(rootNode.id);
+    final expanded = notifier.getExpanded(rootNode.id);
+    final childCount = rootNode.childNodes.length;
+    final showExpandButton = rootNode.childNodes.isNotEmpty;
     return Container(
       color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
           .withAlpha(66),
@@ -49,8 +53,18 @@ class MindMap extends StatelessWidget {
         theme: themeBuilder(depth),
         key: UniqueKey(),
         rootNodeWidget: nodeBuilder(rootNode, depth, indexInBrother),
-        subtrees: isExpanded
-            ? List.generate(rootNode.childNodes.length, (index) {
+        expandButton: showExpandButton
+            ? _buildExpandButton(
+                onTap: () {
+                  notifier.toggleExpand(rootNode.id);
+                },
+                childCount: childCount,
+                size: expandButtonSize,
+              )
+            : SizedBox(),
+        subtrees: !expanded
+            ? []
+            : List.generate(childCount, (index) {
                 final nextRootNode = rootNode.childNodes[index];
                 return MindMap(
                   themeBuilder: themeBuilder,
@@ -59,8 +73,31 @@ class MindMap extends StatelessWidget {
                   depth: depth + 1,
                   indexInBrother: index,
                 );
-              })
-            : [],
+              }),
+        showExpandButton: showExpandButton,
+        expandButtonSize: expandButtonSize,
+      ),
+    );
+  }
+
+  // TODO 展开按钮放到节点处理
+  static Widget _buildExpandButton({
+    required VoidCallback onTap,
+    required int childCount,
+    required double size,
+  }) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Ink(
+        decoration: BoxDecoration(color: Colors.teal, shape: BoxShape.circle),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(size / 2),
+          onTap: onTap,
+          child: Center(
+            child: Text('$childCount', style: TextStyle(fontSize: 10)),
+          ),
+        ),
       ),
     );
   }
@@ -72,19 +109,32 @@ class RenderMindMapWidget extends MultiChildRenderObjectWidget {
     required super.key,
     required this.rootNodeWidget,
     required this.subtrees,
+    required this.expandButton,
+    required this.showExpandButton,
+    required this.expandButtonSize,
   });
 
   final MindMapTheme theme;
 
-  @override
-  List<Widget> get children => [rootNodeWidget, ...subtrees];
+  final bool showExpandButton;
 
-  final Widget rootNodeWidget;
+  @override
+  List<Widget> get children => [rootNodeWidget, expandButton, ...subtrees];
+
+  final NodeWidget rootNodeWidget;
+
+  final Widget expandButton;
+
+  final double expandButtonSize;
 
   final List<MindMap> subtrees;
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return RenderMindMap(theme: theme);
+    return RenderMindMap(
+      expandButtonSize: expandButtonSize,
+      showExpandButton: showExpandButton,
+      theme: theme,
+    );
   }
 }
 
@@ -99,9 +149,17 @@ class RenderMindMap extends RenderBox
     }
   }
 
+  final double expandButtonSize;
+
+  final bool showExpandButton;
+
   final MindMapTheme theme;
 
-  RenderMindMap({required this.theme});
+  RenderMindMap({
+    required this.expandButtonSize,
+    required this.showExpandButton,
+    required this.theme,
+  });
 
   @override
   void performLayout() {
@@ -109,7 +167,9 @@ class RenderMindMap extends RenderBox
     rootNode.layout(constraints, parentUsesSize: true);
     final rNParentData = rootNode.parentData as MindMapParentData;
     final rootNodeSize = rootNode.size;
-    RenderBox? subTree = rNParentData.nextSibling;
+    RenderBox expandButton = rNParentData.nextSibling!;
+    expandButton.layout(constraints);
+    RenderBox? subTree = childAfter(expandButton);
     double maxChildWidth = 0;
     double childrenHeight = 0;
     double subTreeYOffset = 0;
@@ -145,6 +205,20 @@ class RenderMindMap extends RenderBox
         subTree = parentData.nextSibling;
       }
     }
+    if (showExpandButton) {
+      // TODO 2是按钮和节点的距离
+      final offset = Offset(
+        rootNodeSize.width + 2,
+        (rootNodeSize.height - expandButtonSize) / 2,
+      );
+      (expandButton.parentData as MindMapParentData).offset =
+          rNParentData.offset + offset;
+      size = Size(size.width + 2 + expandButtonSize, size.height);
+      assert(
+        rootNodeSize.height > expandButtonSize,
+        'expandButtonSize too big',
+      );
+    }
   }
 
   @override
@@ -153,7 +227,8 @@ class RenderMindMap extends RenderBox
     final rNParentData = rootNode.parentData as MindMapParentData;
     final rootNodeOffset = rNParentData.offset + offset;
     context.paintChild(rootNode, rootNodeOffset);
-    RenderBox? subtree = rNParentData.nextSibling;
+    RenderBox expandButton = rNParentData.nextSibling!;
+    RenderBox? subtree = childAfter(expandButton);
     final lienStartOffset =
         rootNodeOffset + Offset(rootNode.size.width, rootNode.size.height / 2);
     while (subtree != null) {
@@ -166,6 +241,17 @@ class RenderMindMap extends RenderBox
         subtreeOffset + Offset(0, subtree.size.height / 2),
       );
       subtree = parentData.nextSibling;
+    }
+    if (showExpandButton) {
+      drawMindCurve(
+        context.canvas,
+        lienStartOffset,
+        lienStartOffset + Offset(2, 0),
+      );
+      context.paintChild(
+        expandButton,
+        (expandButton.parentData as MindMapParentData).offset + offset,
+      );
     }
   }
 
