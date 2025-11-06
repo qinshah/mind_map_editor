@@ -3,9 +3,10 @@ import 'package:flutter/rendering.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_notifier.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
+import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
 import 'package:provider/provider.dart';
 
-typedef NodeBuilder = Widget Function(Node node, int depth, int indexInBrother);
+typedef NodeBuilder = NodeWidget Function(Node node, int depth, int indexInBrother);
 
 typedef ThemeBuilder = MindMapTheme Function(int depth);
 
@@ -41,8 +42,8 @@ class MindMap extends StatelessWidget {
     final notifier = context.watch<MindMapNotifier>();
     final isExpanded = notifier.getExpanded(rootNode.id);
     return Container(
-      color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
-          .withAlpha(66),
+      // color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
+      //     .withAlpha(66),
       child: RenderMindMapWidget(
         theme: themeBuilder(depth),
         key: Key('${rootNode.id}：isExpanded：$isExpanded'),
@@ -117,11 +118,13 @@ class RenderMindMap extends RenderBox
       subTree.layout(constraints, parentUsesSize: true);
       parentData.offset = Offset(subTreeXOffset, subTreeYOffset);
       subTreeYOffset += subTree.size.height + theme.spacingBetweenSubTree;
-      childrenHeight += subTree.size.height + theme.spacingBetweenSubTree;
       if (subTree.size.width > maxChildWidth) {
         maxChildWidth = subTree.size.width;
       }
-      subTree = parentData.nextSibling;
+      childrenHeight += subTree.size.height;
+      final nextSubTree = parentData.nextSibling;
+      if (nextSubTree != null) childrenHeight += theme.spacingBetweenSubTree;
+      subTree = nextSubTree;
     }
     final width = subTreeXOffset + maxChildWidth;
     if (childrenHeight > rootNodeSize.height) {
@@ -146,13 +149,53 @@ class RenderMindMap extends RenderBox
   void paint(PaintingContext context, Offset offset) {
     final rootNode = firstChild!;
     final rNParentData = rootNode.parentData as MindMapParentData;
-    context.paintChild(rootNode, rNParentData.offset + offset);
+    final rootNodeOffset = rNParentData.offset + offset;
+    context.paintChild(rootNode, rootNodeOffset);
     RenderBox? subtree = rNParentData.nextSibling;
+    final lienStartOffset =
+        rootNodeOffset + Offset(rootNode.size.width, rootNode.size.height / 2);
     while (subtree != null) {
       final parentData = subtree.parentData as MindMapParentData;
+      final subtreeOffset = parentData.offset + offset;
       context.paintChild(subtree, parentData.offset + offset);
+      drawMindCurve(
+        context.canvas,
+        lienStartOffset,
+        subtreeOffset + Offset(0, subtree.size.height / 2),
+      );
       subtree = parentData.nextSibling;
     }
+  }
+
+  /// 从 [from] 到 [to] 画一条 XMind 风格的贝塞尔曲线
+  /// [thickness] 线宽，[color] 颜色
+  void drawMindCurve(
+    Canvas canvas,
+    Offset from,
+    Offset to, {
+    Color color = const Color(0xFF4A90E2),
+    double thickness = 1.5,
+  }) {
+    // 1. 水平或垂直的“主方向”
+    final delta = to - from;
+    final path = Path()..moveTo(from.dx, from.dy);
+
+    // 2. 控制点：让曲线“甩”出去
+    //    系数 0.6 可以调，越大曲线越“弯”
+    const double k = 0.6;
+    final Offset c1 = from + Offset(delta.dx * k, 0);
+    final Offset c2 = to - Offset(delta.dx * k, 0);
+
+    path.cubicTo(c1.dx, c1.dy, c2.dx, c2.dy, to.dx, to.dy);
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = thickness
+        ..color = color
+        ..isAntiAlias = true,
+    );
   }
 
   // RenderFlex f;
