@@ -14,13 +14,13 @@ class MindMapTheme {
 class NodeTheme {
   final TextStyle? textStyle;
 
-  final Color? color;
+  final Color color;
 
   final EdgeInsets padding;
 
   const NodeTheme({
     this.textStyle,
-    this.color,
+    required this.color,
     this.padding = const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
   });
 }

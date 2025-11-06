@@ -52,9 +52,10 @@ class _EditorViewState extends State<EditorView> {
                       nodeBuilder: (Node node, int depth, int indexOfDepth) {
                         return NodeWidget(
                           node,
-                          onTap: node.childNodes.isEmpty
-                              ? null
-                              : () => _mindMapNotifier.toggleExpand(node.id),
+                          onTap: () {
+                            if (node.childNodes.isEmpty) return;
+                            _mindMapNotifier.toggleExpand(node.id);
+                          },
                         );
                       },
                       themeBuilder: _buildTheme,
