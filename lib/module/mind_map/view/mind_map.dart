@@ -33,12 +33,12 @@ class MindMap extends StatelessWidget {
         : MindMapTheme();
     final isExpanded = notifier.getExpanded(rootNode.id);
     return Container(
-      // color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
-      //     .withAlpha(66),
+      color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
+          .withAlpha(66),
       child: RenderMindMapWidget(
         key: Key('${rootNode.id}：isExpanded：$isExpanded'),
         rootNodeWidget: rootNodeBuilder(rootNode),
-        subtree: isExpanded
+        subtrees: isExpanded
             ? List.generate(rootNode.childNodes.length, (index) {
                 final nextRootNode = rootNode.childNodes[index];
                 return MindMap(
@@ -56,14 +56,14 @@ class RenderMindMapWidget extends MultiChildRenderObjectWidget {
   const RenderMindMapWidget({
     required super.key,
     required this.rootNodeWidget,
-    required this.subtree,
+    required this.subtrees,
   });
 
   @override
-  List<Widget> get children => [rootNodeWidget, ...subtree];
+  List<Widget> get children => [rootNodeWidget, ...subtrees];
 
   final Widget rootNodeWidget;
-  final List<MindMap> subtree;
+  final List<MindMap> subtrees;
   @override
   RenderObject createRenderObject(BuildContext context) {
     return RenderMindMap();
@@ -85,47 +85,55 @@ class RenderMindMap extends RenderBox
   void performLayout() {
     final rootNode = firstChild!;
     rootNode.layout(constraints, parentUsesSize: true);
+    final rNParentData = rootNode.parentData as MindMapParentData;
     final rootNodeSize = rootNode.size;
-    RenderBox? childTree = childAfter(rootNode);
+    RenderBox? subTree = rNParentData.nextSibling;
     double maxChildWidth = 0;
     double childrenHeight = 0;
     double childTreeTranslateY = 0;
-    for (; childTree != null; childTree = childAfter(childTree)) {
-      childTree.layout(constraints, parentUsesSize: true);
-      (childTree.parentData as MindMapParentData).offset = Offset(
-        rootNodeSize.width,
-        childTreeTranslateY,
-      );
-      childTreeTranslateY += childTree.size.height;
-      childrenHeight += childTree.size.height;
-      if (childTree.size.width > maxChildWidth) {
-        maxChildWidth = childTree.size.width;
+    while (subTree != null) {
+      final parentData = subTree.parentData as MindMapParentData;
+      subTree.layout(constraints, parentUsesSize: true);
+      parentData.offset = Offset(rootNodeSize.width, childTreeTranslateY);
+      childTreeTranslateY += subTree.size.height;
+      childrenHeight += subTree.size.height;
+      if (subTree.size.width > maxChildWidth) {
+        maxChildWidth = subTree.size.width;
       }
+      subTree = parentData.nextSibling;
     }
     final width = rootNodeSize.width + maxChildWidth;
     if (childrenHeight > rootNodeSize.height) {
       size = Size(width, childrenHeight);
-      (rootNode.parentData as MindMapParentData).offset = Offset(
+      rNParentData.offset = Offset(
         0,
         (childrenHeight - rootNodeSize.height) / 2,
       );
     } else {
       size = Size(width, rootNodeSize.height);
       final moreTranslateY = (rootNodeSize.height - childrenHeight) / 2;
-      childTree = childAfter(rootNode);
-      for (; childTree != null; childTree = childAfter(childTree)) {
-        (childTree.parentData as MindMapParentData).offset += Offset(
-          0,
-          moreTranslateY,
-        );
+      subTree = rNParentData.nextSibling;
+      while (subTree != null) {
+        final parentData = subTree.parentData as MindMapParentData;
+        parentData.offset += Offset(0, moreTranslateY);
+        subTree = parentData.nextSibling;
       }
     }
   }
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    defaultPaint(context, offset);
+    final rootNode = firstChild!;
+    final rNParentData = rootNode.parentData as MindMapParentData;
+    context.paintChild(rootNode, rNParentData.offset + offset);
+    RenderBox? subtree = childAfter(rootNode);
+    while (subtree != null) {
+      final parentData = subtree.parentData as MindMapParentData;
+      context.paintChild(subtree, parentData.offset + offset);
+      subtree = parentData.nextSibling;
+    }
   }
+  
   // RenderFlex f;
 
   @override
