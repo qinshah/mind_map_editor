@@ -170,6 +170,12 @@ class _NodeWidgetState extends State<NodeWidget> {
                             maxLines: null,
                             style: theme.textStyle,
                             controller: _cntlr,
+                            onTap: () {
+                              _mindMap.saveSelection(
+                                _cntlr.selection,
+                                widget.node,
+                              );
+                            },
                             onChanged: (value) {
                               widget.node.title = value;
                               _mindMap.saveSelection(

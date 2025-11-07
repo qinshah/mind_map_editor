@@ -17,8 +17,16 @@ class EditorHub extends StatelessWidget {
           top: 10,
           left: 10,
           child: TextButton(
-            onPressed: notifier.importXmind,
-            child: Text('导入xmind'),
+            onPressed: notifier.import,
+            child: Text('导入'),
+          ),
+        ),
+        Positioned(
+          top: 10,
+          right: 10,
+          child: TextButton(
+            onPressed: () => notifier.share(notifier.state.xmind),
+            child: Text('分享'),
           ),
         ),
         if (state.scaleHubTimer.isActive)

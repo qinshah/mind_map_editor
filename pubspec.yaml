@@ -14,6 +14,7 @@ dependencies:
   forui: ^0.14.1 # UI
   provider: ^6.1.5+1 # 状态管理
   path_provider: # 应用可用路径.鸿蒙适配
+  share_plus: # 分享.鸿蒙适配
 
 dev_dependencies:
   flutter_test:
@@ -29,6 +30,11 @@ dependency_overrides:
     git:
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
       path: "packages/path_provider/path_provider"
+  share_plus: # 分享.鸿蒙适配
+    git:
+      url: https://gitcode.com/openharmony-sig/flutter_plus_plugins.git
+      path: packages/share_plus/share_plus
+      ref: br_share_plus-v10.1.1_ohos
 
 flutter:
   uses-material-design: true
