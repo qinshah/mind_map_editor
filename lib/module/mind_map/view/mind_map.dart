@@ -40,13 +40,14 @@ class MindMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // print('构建${rootNode.title}');
     final notifier = context.watch<MindMapNotifier>();
     final expanded = notifier.getExpanded(rootNode.id);
     final childCount = rootNode.childNodes.length;
     final showExpandButton = rootNode.childNodes.isNotEmpty;
     return Container(
-      // color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
-      //     .withAlpha(66),
+      color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
+          .withAlpha(66),
       child: RenderMindMapWidget(
         theme: themeBuilder(depth),
         key: UniqueKey(),
@@ -104,7 +105,7 @@ class MindMap extends StatelessWidget {
 class RenderMindMapWidget extends MultiChildRenderObjectWidget {
   const RenderMindMapWidget({
     required this.theme,
-    required super.key,
+    super.key,
     required this.rootNodeWidget,
     required this.subtrees,
     required this.expandButton,
