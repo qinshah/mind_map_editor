@@ -56,12 +56,8 @@ class EditorNotifier extends ChangeNotifier {
   }
 
   Future<void> export() async {
-    final jsonFile = FM.supportPathFile(
-      PathConst.root.join([PathConst.dataName]),
-    );
-    final json = jsonEncode(state.xmind.toJson());
-    await jsonFile.writeAsString(json);
-    final tempMindPath = FM.tempPath('${state.xmind.root.title}.mind');
+    await save();
+    final tempMindPath = FM.tempPath('导出.mind');
     await FM.encodeDirToArchive(
       tempMindPath,
       dirPath: FM.supportPath(PathConst.root),
@@ -73,5 +69,13 @@ class EditorNotifier extends ChangeNotifier {
     await Future.delayed(Durations.medium1); // 防止build未结束就rebuild
     notifyListeners();
     state.mindMapSize = value;
+  }
+
+  Future<void> save() async {
+    final jsonFile = FM.supportPathFile(
+      PathConst.root.join([PathConst.dataName]),
+    );
+    final json = jsonEncode(state.xmind.toJson());
+    await jsonFile.writeAsString(json);
   }
 }

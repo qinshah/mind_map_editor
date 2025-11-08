@@ -68,7 +68,7 @@ class _EditorViewState extends State<EditorView> {
               );
             },
           ),
-          EditorHub(),
+          EditorHub(_mindMapCntlr),
         ],
       ),
     );

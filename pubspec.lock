@@ -375,6 +375,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.4.0+1"
+  os_type:
+    dependency: "direct main"
+    description:
+      name: os_type
+      sha256: "06966db0645d191ccf01ff11106d225a9c748a9f3ff59ff64464ffefe196514f"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.2"
   package_config:
     dependency: transitive
     description:
@@ -609,7 +617,7 @@ packages:
     source: hosted
     version: "3.1.4"
   uuid:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: uuid
       sha256: a11b666489b1954e01d992f3d601b1804a33937b5a8fe677bd26b8a9f96f96e8

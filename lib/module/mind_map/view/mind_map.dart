@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
@@ -58,8 +59,10 @@ class MindMap extends StatelessWidget {
         final showExpandButton = node.subNodes.isNotEmpty;
         return Container(
           // TODO 去掉区域背景色
-          color: Colors.primaries[node.hashCode % Colors.primaries.length]
-              .withAlpha(66),
+          color: kDebugMode
+              ? Colors.primaries[node.hashCode % Colors.primaries.length]
+                    .withAlpha(66)
+              : null,
           child: RenderMindMapWidget(
             theme: themeBuilder(path),
             key: UniqueKey(),

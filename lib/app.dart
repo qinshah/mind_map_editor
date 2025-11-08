@@ -17,10 +17,12 @@ class App extends StatelessWidget {
         child: EditorView(),
       ),
       theme: ThemeData(
+        appBarTheme: AppBarTheme(backgroundColor: Color(0xffEEF0F2)),
         primaryColor: mColor,
         colorScheme: ColorScheme.fromSeed(seedColor: mColor),
       ),
       darkTheme: ThemeData(
+        appBarTheme: AppBarTheme(backgroundColor:Colors.grey.shade800),
         brightness: Brightness.dark,
         primaryColor: mColor,
         colorScheme: ColorScheme.fromSeed(

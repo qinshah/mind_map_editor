@@ -40,8 +40,8 @@ class Node {
     required Node? parent,
   }) {
     final node = Node(
-      image: NodeImg.fromJson(json['image']),
       parent: parent,
+      image: NodeImg.fromJson(json['image']),
       id: json['id'] as String,
       title: json['title'] as String,
       titleUnedited: json['titleUnedited'] as bool? ?? false,
@@ -140,7 +140,7 @@ class Xmind {
   Xmind({required this.root});
 
   Xmind.empty()
-    : root = Node(id: 'root', title: '中心节点', parent: null, image: null);
+    : root = Node(id: 'root', title: '中心节点', image: null, parent: null);
 
   factory Xmind.fromJson(List<dynamic> json) {
     return Xmind(
