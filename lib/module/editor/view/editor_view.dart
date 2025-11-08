@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
-import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/editor/editor_notifier.dart';
 import 'package:mind_map_editor/module/editor/view/editor_hub.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_notifier.dart';
@@ -41,8 +40,8 @@ class _EditorViewState extends State<EditorView> {
                   maxScale: state.maxScale,
                   // 让最小倍数时刚好填满视口
                   boundaryMargin: EdgeInsets.symmetric(
-                    horizontal: hMargin,
-                    vertical: vMargin,
+                    horizontal: hMargin > 0 ? hMargin : 0,
+                    vertical: vMargin > 0 ? vMargin : 0,
                   ),
                   builder: (context, _) => SizeChangeNotifier(
                     onSizeChange: notifier.updateMindMapSize,

@@ -42,12 +42,13 @@ class MindMap extends StatelessWidget {
     final childCount = rootNode.childNodes.length;
     final showExpandButton = rootNode.childNodes.isNotEmpty;
     return Container(
+      // TODO 去掉区域背景色
       color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
           .withAlpha(66),
       child: RenderMindMapWidget(
         theme: themeBuilder(path),
         key: UniqueKey(),
-        rootNodeWidget: nodeBuilder(rootNode,path),
+        rootNodeWidget: nodeBuilder(rootNode, path),
         expandButton: showExpandButton
             ? _buildExpandButton(
                 onTap: () {
