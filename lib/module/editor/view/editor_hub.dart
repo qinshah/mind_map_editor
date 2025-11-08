@@ -16,16 +16,13 @@ class EditorHub extends StatelessWidget {
         Positioned(
           top: 10,
           left: 10,
-          child: TextButton(
-            onPressed: notifier.import,
-            child: Text('导入'),
-          ),
+          child: TextButton(onPressed: notifier.import, child: Text('导入')),
         ),
         Positioned(
           top: 10,
           right: 10,
           child: TextButton(
-            onPressed: () => notifier.share(notifier.state.xmind),
+            onPressed: notifier.export,
             child: Text('分享'),
           ),
         ),

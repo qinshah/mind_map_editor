@@ -19,6 +19,12 @@ class _EditorViewState extends State<EditorView> {
   final _mindMapCntlr = MindMapCntlr();
 
   @override
+  void initState() {
+    context.read<EditorNotifier>().loadSavedMindMap();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final notifier = context.watch<EditorNotifier>();
     final state = notifier.state;

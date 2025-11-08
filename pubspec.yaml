@@ -15,6 +15,7 @@ dependencies:
   provider: ^6.1.5+1 # 状态管理
   path_provider: # 应用可用路径.鸿蒙适配
   share_plus: # 分享.鸿蒙适配
+  path: ^1.9.1 # 文件路径
 
 dev_dependencies:
   flutter_test:
