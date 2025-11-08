@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/module/editor/editor_notifier.dart';
 import 'package:mind_map_editor/module/editor/view/editor_hub.dart';
-import 'package:mind_map_editor/module/mind_map/mind_map_notifier.dart';
+import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
 import 'package:mind_map_editor/module/mind_map/view/mind_map.dart';
 import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
 import 'package:mind_map_editor/widget/size_change_notifier.dart';
@@ -16,7 +16,7 @@ class EditorView extends StatefulWidget {
 }
 
 class _EditorViewState extends State<EditorView> {
-  final _mindMapNotifier = MindMapNotifier();
+  final _mindMapCntlr = MindMapCntlr();
 
   @override
   Widget build(BuildContext context) {
@@ -31,29 +31,31 @@ class _EditorViewState extends State<EditorView> {
               final logicSize = constraints.biggest / state.minScale;
               final hMargin = (logicSize.width - state.mindMapSize.width) / 2;
               final vMargin = (logicSize.height - state.mindMapSize.height) / 2;
-              return ChangeNotifierProvider.value(
-                value: _mindMapNotifier,
-                child: InteractiveViewer.builder(
-                  onInteractionUpdate: notifier.updateScale,
-                  transformationController: notifier.tCntlr,
-                  minScale: state.minScale,
-                  maxScale: state.maxScale,
-                  // 让最小倍数时刚好填满视口
-                  boundaryMargin: EdgeInsets.symmetric(
-                    horizontal: hMargin > 0 ? hMargin : 0,
-                    vertical: vMargin > 0 ? vMargin : 0,
-                  ),
-                  builder: (context, _) => SizeChangeNotifier(
-                    onSizeChange: notifier.updateMindMapSize,
-                    child: FocusScope(
-                      child: MindMap.root(
-                        rootNode: state.xmind.root,
-                        key: ValueKey(state.xmind.hashCode),
-                        nodeBuilder: (node, path) {
-                          return NodeWidget(node, theme: _buildNodeTheme(path));
-                        },
-                        themeBuilder: _buildTheme,
-                      ),
+              return InteractiveViewer.builder(
+                onInteractionUpdate: notifier.updateScale,
+                transformationController: notifier.tCntlr,
+                minScale: state.minScale,
+                maxScale: state.maxScale,
+                // 让最小倍数时刚好填满视口
+                boundaryMargin: EdgeInsets.symmetric(
+                  horizontal: hMargin > 0 ? hMargin : 0,
+                  vertical: vMargin > 0 ? vMargin : 0,
+                ),
+                builder: (context, _) => SizeChangeNotifier(
+                  onSizeChange: notifier.updateMindMapSize,
+                  child: FocusScope(
+                    child: MindMap.root(
+                      state.xmind.root,
+                      cntlr: _mindMapCntlr,
+                      key: ValueKey(state.xmind.hashCode),
+                      nodeBuilder: (node, path) {
+                        return NodeWidget(
+                          node,
+                          theme: _buildNodeTheme(path),
+                          cntlr: _mindMapCntlr,
+                        );
+                      },
+                      themeBuilder: _buildTheme,
                     ),
                   ),
                 ),

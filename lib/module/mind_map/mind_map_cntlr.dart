@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_state.dart';
 
-class MindMapNotifier extends ChangeNotifier {
+class MindMapCntlr extends ChangeNotifier {
   MindMapState state = MindMapState();
 
   bool getExpanded(String id) => state.expandeds[id] ?? true;

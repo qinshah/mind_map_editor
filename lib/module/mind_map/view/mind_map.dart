@@ -1,32 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
-import 'package:mind_map_editor/module/mind_map/mind_map_notifier.dart';
+import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
-import 'package:provider/provider.dart';
 
 typedef NodeBuilder = NodeWidget Function(Node node, List<int> path);
 
 typedef ThemeBuilder = MindMapTheme Function(List<int> path);
 
 class MindMap extends StatelessWidget {
-  const MindMap({
+  const MindMap(
+    this.node, {
     super.key,
     required this.nodeBuilder,
-    required this.rootNode,
+    required this.cntlr,
     required this.path,
     required this.themeBuilder,
   });
 
-  const MindMap.root({
+  const MindMap.root(
+    this.node, {
     required super.key,
     required this.nodeBuilder,
-    required this.rootNode,
+    required this.cntlr,
     required this.themeBuilder,
   }) : path = const [];
 
-  final Node rootNode;
+  MindMap buildSubTree(Node subNode, {required List<int> subPath}) {
+    return MindMap(
+      subNode,
+      nodeBuilder: nodeBuilder,
+      cntlr: cntlr,
+      path: subPath,
+      themeBuilder: themeBuilder,
+    );
+  }
+
+  final MindMapCntlr cntlr;
+
+  final Node node;
 
   final List<int> path;
 
@@ -37,40 +50,37 @@ class MindMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // print('构建${rootNode.title}');
-    final notifier = context.watch<MindMapNotifier>();
-    final expanded = notifier.getExpanded(rootNode.id);
-    final childCount = rootNode.childNodes.length;
-    final showExpandButton = rootNode.childNodes.isNotEmpty;
-    return Container(
-      // TODO 去掉区域背景色
-      color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
-          .withAlpha(66),
-      child: RenderMindMapWidget(
-        theme: themeBuilder(path),
-        key: UniqueKey(),
-        rootNodeWidget: nodeBuilder(rootNode, path),
-        expandButton: showExpandButton
-            ? _buildExpandButton(
-                onTap: () {
-                  notifier.toggleExpand(rootNode.id);
-                },
-                childCount: childCount,
-              )
-            : SizedBox(),
-        subtrees: !expanded
-            ? []
-            : List.generate(childCount, (index) {
-                final nextRootNode = rootNode.childNodes[index];
-                return MindMap(
-                  themeBuilder: themeBuilder,
-                  nodeBuilder: nodeBuilder,
-                  rootNode: nextRootNode,
-                  path: [...path, index],
-                );
-              }),
-        showExpandButton: showExpandButton,
-        expandButtonSize: expandButtonSize,
-      ),
+    return ListenableBuilder(
+      listenable: cntlr,
+      builder: (BuildContext context, _) {
+        final expanded = cntlr.getExpanded(node.id);
+        final childCount = node.childNodes.length;
+        final showExpandButton = node.childNodes.isNotEmpty;
+        return Container(
+          // TODO 去掉区域背景色
+          color: Colors.primaries[node.hashCode % Colors.primaries.length]
+              .withAlpha(66),
+          child: RenderMindMapWidget(
+            theme: themeBuilder(path),
+            key: UniqueKey(),
+            nodeWidget: nodeBuilder(node, path),
+            expandButton: showExpandButton
+                ? _buildExpandButton(
+                    onTap: () => cntlr.toggleExpand(node.id),
+                    childCount: childCount,
+                  )
+                : SizedBox(),
+            subtrees: !expanded
+                ? []
+                : List.generate(childCount, (index) {
+                    final subNode = node.childNodes[index];
+                    return buildSubTree(subNode, subPath: [...path, index]);
+                  }),
+            showExpandButton: showExpandButton,
+            expandButtonSize: expandButtonSize,
+          ),
+        );
+      },
     );
   }
 
@@ -102,7 +112,7 @@ class RenderMindMapWidget extends MultiChildRenderObjectWidget {
   const RenderMindMapWidget({
     required this.theme,
     super.key,
-    required this.rootNodeWidget,
+    required this.nodeWidget,
     required this.subtrees,
     required this.expandButton,
     required this.showExpandButton,
@@ -114,9 +124,9 @@ class RenderMindMapWidget extends MultiChildRenderObjectWidget {
   final bool showExpandButton;
 
   @override
-  List<Widget> get children => [rootNodeWidget, expandButton, ...subtrees];
+  List<Widget> get children => [nodeWidget, expandButton, ...subtrees];
 
-  final NodeWidget rootNodeWidget;
+  final NodeWidget nodeWidget;
 
   final Widget expandButton;
 

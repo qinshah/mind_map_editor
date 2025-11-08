@@ -2,17 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/editor/editor_notifier.dart';
-import 'package:mind_map_editor/module/mind_map/mind_map_notifier.dart';
+import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
 import 'package:mind_map_editor/module/mind_map/view/node_edit_dialog.dart';
 import 'package:provider/provider.dart';
 
 class NodeWidget extends StatefulWidget {
-  const NodeWidget(this.node, {super.key, this.onTap, required this.theme});
+  const NodeWidget(
+    this.node, {
+    super.key,
+    this.onTap,
+    required this.theme,
+    required this.cntlr,
+  });
 
   final VoidCallback? onTap;
   final Node node;
 
   final NodeTheme theme;
+
+  final MindMapCntlr cntlr;
 
   @override
   State<NodeWidget> createState() => _NodeWidgetState();
@@ -24,13 +32,12 @@ class _NodeWidgetState extends State<NodeWidget> {
 
   final _borderRadius = BorderRadius.circular(6);
 
-  late MindMapNotifier _mindMap;
+  late final _cntlr = widget.cntlr;
 
   late bool _focused;
   @override
   Widget build(BuildContext context) {
-    _mindMap = context.watch<MindMapNotifier>();
-    _focused = _mindMap.getFocused(widget.node);
+    _focused = _cntlr.getFocused(widget.node);
     // if (_focused) print('节点${widget.node.path}聚焦');
     return DragTarget<Node>(
       onMove: (details) {
@@ -61,7 +68,7 @@ class _NodeWidgetState extends State<NodeWidget> {
     return InkWell(
       borderRadius: borderRadius,
       onTap: () {
-        if (!_focused) _mindMap.foucsNode(widget.node);
+        if (!_focused) _cntlr.foucsNode(widget.node);
         widget.onTap?.call();
       },
       child: IgnorePointer(
