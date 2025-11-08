@@ -18,4 +18,7 @@ class MindMapCntlr extends ChangeNotifier {
     notifyListeners();
     state.focusedId = node.id;
   }
+
+  void rebuild() => notifyListeners();
 }
+

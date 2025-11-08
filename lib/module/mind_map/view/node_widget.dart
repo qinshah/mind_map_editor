@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
@@ -16,6 +18,7 @@ class NodeWidget extends StatefulWidget {
   });
 
   final VoidCallback? onTap;
+
   final Node node;
 
   final NodeTheme theme;
@@ -27,6 +30,7 @@ class NodeWidget extends StatefulWidget {
 }
 
 class _NodeWidgetState extends State<NodeWidget> {
+  late final _node = widget.node;
   late final _editor = context.read<EditorNotifier>();
   late final _theme = widget.theme;
 
@@ -37,19 +41,18 @@ class _NodeWidgetState extends State<NodeWidget> {
   late bool _focused;
   @override
   Widget build(BuildContext context) {
-    _focused = _cntlr.getFocused(widget.node);
-    // if (_focused) print('节点${widget.node.path}聚焦');
+    _focused = _cntlr.getFocused(_node);
     return DragTarget<Node>(
       onMove: (details) {
         final draggingNode = details.data;
-        if (draggingNode.id == widget.node.id) return;
+        if (draggingNode.id == _node.id) return;
         // TODO 通过拖拽实现思维导图节点的移动
         // print(draggingNode.title);
         // print(details.offset);
       },
       builder: (_, _, _) {
         return LongPressDraggable(
-          data: widget.node,
+          data: _node,
           feedback: Transform.scale(
             scale: _editor.state.scale / 100,
             child: Material(
@@ -65,19 +68,41 @@ class _NodeWidgetState extends State<NodeWidget> {
   }
 
   Widget _buildChild(NodeTheme theme, BorderRadius borderRadius, {int? alpha}) {
+    final nodeImg = _node.image;
+    final contents = [
+      if (_node.imgPath != null)
+        Image.file(
+          File(_node.imgPath!),
+          // TODO 默认尺寸
+          width: nodeImg!.width ?? 200,
+          height: nodeImg.height ?? 200,
+        ),
+      Text(_node.title, style: theme.textStyle),
+    ];
+    final vertical = switch (nodeImg?.align) {
+      ImgAlign.top || ImgAlign.bottom => true,
+      _ => false,
+    };
+    final children = switch (nodeImg?.align) {
+      ImgAlign.right || ImgAlign.bottom => contents.reversed.toList(),
+      _ => contents,
+    };
     return InkWell(
       borderRadius: borderRadius,
       onTap: () {
-        if (!_focused) _cntlr.foucsNode(widget.node);
+        if (!_focused) _cntlr.foucsNode(_node);
         widget.onTap?.call();
       },
       child: IgnorePointer(
         ignoring: !_focused,
         child: GestureDetector(
-          onTap: () => showDialog(
-            context: context,
-            builder: (_) => NodeEditDialog(widget.node),
-          ),
+          onTap: () async {
+            await showDialog(
+              context: context,
+              builder: (_) => NodeEditDialog(_node),
+            );
+            _cntlr.rebuild();
+          },
           child: Container(
             padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
@@ -96,7 +121,14 @@ class _NodeWidgetState extends State<NodeWidget> {
               ),
               child: Padding(
                 padding: theme.padding,
-                child: Text(widget.node.title, style: theme.textStyle),
+                child: Flex(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: vertical
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.center,
+                  direction: vertical ? Axis.vertical : Axis.horizontal,
+                  children: children,
+                ),
               ),
             ),
           ),

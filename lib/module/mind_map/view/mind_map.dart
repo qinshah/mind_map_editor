@@ -54,8 +54,8 @@ class MindMap extends StatelessWidget {
       listenable: cntlr,
       builder: (BuildContext context, _) {
         final expanded = cntlr.getExpanded(node.id);
-        final childCount = node.childNodes.length;
-        final showExpandButton = node.childNodes.isNotEmpty;
+        final childCount = node.subNodes.length;
+        final showExpandButton = node.subNodes.isNotEmpty;
         return Container(
           // TODO 去掉区域背景色
           color: Colors.primaries[node.hashCode % Colors.primaries.length]
@@ -73,7 +73,7 @@ class MindMap extends StatelessWidget {
             subtrees: !expanded
                 ? []
                 : List.generate(childCount, (index) {
-                    final subNode = node.childNodes[index];
+                    final subNode = node.subNodes[index];
                     return buildSubTree(subNode, subPath: [...path, index]);
                   }),
             showExpandButton: showExpandButton,

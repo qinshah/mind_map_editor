@@ -1,3 +1,21 @@
+import 'package:mind_map_editor/data/path_const.dart';
+import 'package:mind_map_editor/function/file_manager.dart';
+
+// 扩展
+
+final _imgStartPath = PathConst.root.join([PathConst.resName]);
+
+extension NodeExt on Node {
+  String? get imgPath {
+    if (image == null) return null;
+    return FM.supportPath(
+      _imgStartPath.join([image!.src.substring('xap:resources/'.length)]),
+    );
+  }
+
+  List<Node> get subNodes => children?.attached ?? [];
+}
+
 class Node {
   Node? parent;
   final String id;
@@ -5,11 +23,12 @@ class Node {
   bool titleUnedited;
   Children? children;
 
-  List<Node> get childNodes => children?.attached ?? [];
+  NodeImg? image;
 
   Node({
     required this.parent,
     required this.id,
+    required this.image,
     required this.title,
     this.titleUnedited = false,
     this.children,
@@ -21,6 +40,7 @@ class Node {
     required Node? parent,
   }) {
     final node = Node(
+      image: NodeImg.fromJson(json['image']),
       parent: parent,
       id: json['id'] as String,
       title: json['title'] as String,
@@ -39,11 +59,53 @@ class Node {
     return {
       'id': id,
       'title': title,
+      if (image != null) 'image': image!.toJson(),
       'titleUnedited': titleUnedited,
       if (children != null) 'children': children!.toJson(),
     };
   }
 }
+
+class NodeImg {
+  String src;
+  ImgAlign align;
+
+  double? width;
+  double? height;
+
+  NodeImg({
+    required this.src,
+    required this.align,
+    required this.width,
+    required this.height,
+  });
+
+  static NodeImg? fromJson(Map<String, dynamic>? json) {
+    if (json == null) return null;
+
+    return NodeImg(
+      src: json['src'],
+      align: switch (json['align']) {
+        'top' => ImgAlign.top,
+        'bottom' => ImgAlign.bottom,
+        'left' => ImgAlign.left,
+        'right' => ImgAlign.right,
+        _ => ImgAlign.top,
+      },
+      width: double.tryParse(json['width'].toString()),
+      height: double.tryParse(json['height'].toString()),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'src': src,
+    'align': align.name,
+    if (width != null) 'width': width,
+    if (height != null) 'height': height,
+  };
+}
+
+enum ImgAlign { top, bottom, left, right }
 
 class Children {
   final List<Node> attached;
@@ -78,7 +140,7 @@ class Xmind {
   Xmind({required this.root});
 
   Xmind.empty()
-    : root = Node(id: 'root', title: '中心节点', parent: null);
+    : root = Node(id: 'root', title: '中心节点', parent: null, image: null);
 
   factory Xmind.fromJson(List<dynamic> json) {
     return Xmind(
