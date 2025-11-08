@@ -50,8 +50,8 @@ class _EditorViewState extends State<EditorView> {
                       child: MindMap.root(
                         rootNode: state.xmind.root,
                         key: ValueKey(state.xmind.hashCode),
-                        nodeBuilder: (Node node, int depth, int indexOfDepth) {
-                          return NodeWidget(node, onTap: () {});
+                        nodeBuilder: (node, path) {
+                          return NodeWidget(node, theme: _buildNodeTheme(path));
                         },
                         themeBuilder: _buildTheme,
                       ),
@@ -67,7 +67,7 @@ class _EditorViewState extends State<EditorView> {
     );
   }
 
-  MindMapTheme _buildTheme(int depth) => switch (depth) {
+  MindMapTheme _buildTheme(List<int> path) => switch (path.length) {
     // 根节点
     0 => MindMapTheme(spacingBetweenSubTree: 20, spacingWithSubTree: 40),
     // 根节点的子节点
@@ -75,4 +75,45 @@ class _EditorViewState extends State<EditorView> {
     // 后续节点
     int() => MindMapTheme(),
   };
+
+  NodeTheme _buildNodeTheme(List<int> path) {
+    final depth = path.length;
+    final color =
+        // 根节点
+        depth == 0
+        ? Theme.of(context).primaryColor
+        // 控制相同分支色调一致
+        : Colors.primaries[path[0] % Colors.primaries.length].withAlpha(
+            depth == 1 ? 200 : 144, // 深度1和后续深度
+          );
+    final textColor = color.computeLuminance() > 0.5
+        ? Colors.black
+        : Colors.white;
+    return switch (depth) {
+      // 根节点
+      0 => NodeTheme(
+        color: color,
+        textStyle: TextStyle(
+          color: textColor,
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+      ),
+      // 一级分支节点
+      1 => NodeTheme(
+        color: color,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        textStyle: TextStyle(
+          color: textColor,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      int() => NodeTheme(
+        color: color,
+        textStyle: TextStyle(color: textColor),
+      ),
+    };
+  }
 }

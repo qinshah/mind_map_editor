@@ -4,7 +4,6 @@ class Node {
   String title;
   bool titleUnedited;
   Children? children;
-  List<int> path;
 
   List<Node> get childNodes => children?.attached ?? [];
 
@@ -12,7 +11,6 @@ class Node {
     required this.parent,
     required this.id,
     required this.title,
-    required this.path,
     this.titleUnedited = false,
     this.children,
   });
@@ -24,7 +22,6 @@ class Node {
   }) {
     final node = Node(
       parent: parent,
-      path: path,
       id: json['id'] as String,
       title: json['title'] as String,
       titleUnedited: json['titleUnedited'] as bool? ?? false,
@@ -38,14 +35,6 @@ class Node {
           );
     return node;
   }
-
-  bool get isFirstChild => path.last == 0;
-
-  bool get isMidChild {
-    if (parent == null) return false;
-    return path.last == parent!.childNodes.length ~/ 2;
-  }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -89,7 +78,7 @@ class Xmind {
   Xmind({required this.root});
 
   Xmind.empty()
-    : root = Node(id: 'root', title: '中心节点', path: [0], parent: null);
+    : root = Node(id: 'root', title: '中心节点', parent: null);
 
   factory Xmind.fromJson(List<dynamic> json) {
     return Xmind(

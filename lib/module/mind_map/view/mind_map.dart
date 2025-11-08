@@ -6,18 +6,16 @@ import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
 import 'package:provider/provider.dart';
 
-typedef NodeBuilder =
-    NodeWidget Function(Node node, int depth, int indexInBrother);
+typedef NodeBuilder = NodeWidget Function(Node node, List<int> path);
 
-typedef ThemeBuilder = MindMapTheme Function(int depth);
+typedef ThemeBuilder = MindMapTheme Function(List<int> path);
 
 class MindMap extends StatelessWidget {
   const MindMap({
     super.key,
     required this.nodeBuilder,
     required this.rootNode,
-    required this.depth,
-    required this.indexInBrother,
+    required this.path,
     required this.themeBuilder,
   });
 
@@ -26,13 +24,11 @@ class MindMap extends StatelessWidget {
     required this.nodeBuilder,
     required this.rootNode,
     required this.themeBuilder,
-  }) : depth = 0,
-       indexInBrother = 0;
+  }) : path = const [];
 
   final Node rootNode;
 
-  final int depth;
-  final int indexInBrother;
+  final List<int> path;
 
   final NodeBuilder nodeBuilder;
 
@@ -49,9 +45,9 @@ class MindMap extends StatelessWidget {
       color: Colors.primaries[rootNode.hashCode % Colors.primaries.length]
           .withAlpha(66),
       child: RenderMindMapWidget(
-        theme: themeBuilder(depth),
+        theme: themeBuilder(path),
         key: UniqueKey(),
-        rootNodeWidget: nodeBuilder(rootNode, depth, indexInBrother),
+        rootNodeWidget: nodeBuilder(rootNode,path),
         expandButton: showExpandButton
             ? _buildExpandButton(
                 onTap: () {
@@ -68,8 +64,7 @@ class MindMap extends StatelessWidget {
                   themeBuilder: themeBuilder,
                   nodeBuilder: nodeBuilder,
                   rootNode: nextRootNode,
-                  depth: depth + 1,
-                  indexInBrother: index,
+                  path: [...path, index],
                 );
               }),
         showExpandButton: showExpandButton,
