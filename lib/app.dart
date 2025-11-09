@@ -16,13 +16,16 @@ class App extends StatelessWidget {
         create: (_) => EditorNotifier(),
         child: EditorView(),
       ),
+      builder: (context, child) {
+        return Scaffold(appBar: AppBar(toolbarHeight: 0), body: child);
+      },
       theme: ThemeData(
         appBarTheme: AppBarTheme(backgroundColor: Color(0xffEEF0F2)),
         primaryColor: mColor,
         colorScheme: ColorScheme.fromSeed(seedColor: mColor),
       ),
       darkTheme: ThemeData(
-        appBarTheme: AppBarTheme(backgroundColor:Colors.grey.shade800),
+        appBarTheme: AppBarTheme(backgroundColor: Colors.grey.shade800),
         brightness: Brightness.dark,
         primaryColor: mColor,
         colorScheme: ColorScheme.fromSeed(

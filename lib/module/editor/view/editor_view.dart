@@ -33,49 +33,46 @@ class _EditorViewState extends State<EditorView> {
   Widget build(BuildContext context) {
     _editor = context.watch<EditorNotifier>();
     final state = _editor.state;
-    return Scaffold(
-      appBar: AppBar(toolbarHeight: 0),
-      body: Stack(
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final logicSize = constraints.biggest / state.minScale;
-              final hMargin = (logicSize.width - state.mindMapSize.width) / 2;
-              final vMargin = (logicSize.height - state.mindMapSize.height) / 2;
-              return InteractiveViewer.builder(
-                onInteractionUpdate: _editor.updateScale,
-                transformationController: _editor.tCntlr,
-                minScale: state.minScale,
-                maxScale: state.maxScale,
-                // 让最小倍数时刚好填满视口
-                boundaryMargin: EdgeInsets.symmetric(
-                  horizontal: hMargin > 0 ? hMargin : 0,
-                  vertical: vMargin > 0 ? vMargin : 0,
-                ),
-                builder: (context, _) => SizeChangeNotifier(
-                  onSizeChange: _editor.updateMindMapSize,
-                  child: FocusScope(
-                    child: MindMap<XNode>.root(
-                      state.xmind.root,
-                      cntlr: _mindMapCntlr,
-                      key: ValueKey(state.xmind.hashCode),
-                      nodeWidgetBuilder: (node, path) {
-                        return NodeWidget(
-                          node,
-                          theme: _buildNodeTheme(path),
-                          cntlr: _mindMapCntlr,
-                        );
-                      },
-                      themeBuilder: _buildTheme,
-                    ),
+    return Stack(
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final logicSize = constraints.biggest / state.minScale;
+            final hMargin = (logicSize.width - state.mindMapSize.width) / 2;
+            final vMargin = (logicSize.height - state.mindMapSize.height) / 2;
+            return InteractiveViewer.builder(
+              onInteractionUpdate: _editor.updateScale,
+              transformationController: _editor.tCntlr,
+              minScale: state.minScale,
+              maxScale: state.maxScale,
+              // 让最小倍数时刚好填满视口
+              boundaryMargin: EdgeInsets.symmetric(
+                horizontal: hMargin > 0 ? hMargin : 0,
+                vertical: vMargin > 0 ? vMargin : 0,
+              ),
+              builder: (context, _) => SizeChangeNotifier(
+                onSizeChange: _editor.updateMindMapSize,
+                child: FocusScope(
+                  child: MindMap<XNode>.root(
+                    state.xmind.root,
+                    cntlr: _mindMapCntlr,
+                    key: ValueKey(state.xmind.hashCode),
+                    nodeWidgetBuilder: (node, path) {
+                      return NodeWidget(
+                        node,
+                        theme: _buildNodeTheme(path),
+                        cntlr: _mindMapCntlr,
+                      );
+                    },
+                    themeBuilder: _buildTheme,
                   ),
                 ),
-              );
-            },
-          ),
-          EditorHub(_mindMapCntlr),
-        ],
-      ),
+              ),
+            );
+          },
+        ),
+        EditorHub(_mindMapCntlr),
+      ],
     );
   }
 
