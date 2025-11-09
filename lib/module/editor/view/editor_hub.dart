@@ -16,6 +16,7 @@ class EditorHub extends StatelessWidget {
     return ListenableBuilder(
       listenable: mindMap,
       builder: (context, _) {
+        final focusedNode = mindMap.focusedNode();
         return Stack(
           alignment: Alignment.center,
           children: [
@@ -30,23 +31,25 @@ class EditorHub extends StatelessWidget {
                   child: Row(
                     children: [
                       TextButton(
-                        onPressed: mindMap.state.focusedNode == null
+                        onPressed: focusedNode == null
                             ? null
-                            : () => mindMap.insertNodeUnder(
-                                mindMap.state.focusedNode!,
-                              ),
+                            : () => mindMap.insertNodeUnder(focusedNode),
                         child: Text('子节点'),
                       ),
                       TextButton(
-                        onPressed: mindMap.state.focusedNode?.parent == null
-                            ? null
-                            : () => mindMap.insertNodeAfter,
+                        onPressed:
+                            focusedNode != null &&
+                                mindMap.getParentNode(focusedNode) != null
+                            ? () => mindMap.insertNodeAfter(focusedNode)
+                            : null,
                         child: Text('兄弟节点'),
                       ),
                       IconButton(
-                        onPressed: mindMap.state.focusedNode?.parent == null
-                            ? null
-                            : () => mindMap.deleteNode(mindMap.state.focusedNode!),
+                        onPressed:
+                            focusedNode != null &&
+                                mindMap.getParentNode(focusedNode) != null
+                            ? () => mindMap.deleteNode(focusedNode)
+                            : null,
                         icon: Icon(Icons.delete_outline),
                       ),
                       TextButton(onPressed: notifier.import, child: Text('导入')),

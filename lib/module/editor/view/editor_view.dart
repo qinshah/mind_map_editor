@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
+import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/editor/editor_notifier.dart';
 import 'package:mind_map_editor/module/editor/view/editor_hub.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
@@ -17,7 +18,10 @@ class EditorView extends StatefulWidget {
 
 class _EditorViewState extends State<EditorView> {
   late EditorNotifier _editor;
-  late final _mindMapCntlr = MindMapCntlr(onNodeChanged: (_) => _editor.save());
+  late final _mindMapCntlr = MindMapCntlr<XNode>(
+    onNodeChanged: (_) => _editor.save(),
+    newNodeBuilder: () => XNode.newInsert(),
+  );
 
   @override
   void initState() {
@@ -51,11 +55,11 @@ class _EditorViewState extends State<EditorView> {
                 builder: (context, _) => SizeChangeNotifier(
                   onSizeChange: _editor.updateMindMapSize,
                   child: FocusScope(
-                    child: MindMap.root(
+                    child: MindMap<XNode>.root(
                       state.xmind.root,
                       cntlr: _mindMapCntlr,
                       key: ValueKey(state.xmind.hashCode),
-                      nodeBuilder: (node, path) {
+                      nodeWidgetBuilder: (node, path) {
                         return NodeWidget(
                           node,
                           theme: _buildNodeTheme(path),

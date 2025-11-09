@@ -4,7 +4,7 @@ import 'package:mind_map_editor/data_model/xmind.dart';
 class NodeEditDialog extends StatefulWidget {
   const NodeEditDialog(this.node, {super.key});
 
-  final Node node;
+  final XNode node;
 
   @override
   State<NodeEditDialog> createState() => _NodeEditDialogState();

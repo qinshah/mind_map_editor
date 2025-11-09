@@ -19,7 +19,7 @@ class NodeWidget extends StatefulWidget {
 
   final VoidCallback? onTap;
 
-  final Node node;
+  final XNode node;
 
   final NodeTheme theme;
 
@@ -42,7 +42,7 @@ class _NodeWidgetState extends State<NodeWidget> {
   @override
   Widget build(BuildContext context) {
     _focused = _cntlr.getFocused(_node);
-    return DragTarget<Node>(
+    return DragTarget<XNode>(
       onMove: (details) {
         final draggingNode = details.data;
         if (draggingNode.id == _node.id) return;

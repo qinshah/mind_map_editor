@@ -1,20 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:mind_map_editor/data_model/mind_map_node.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
-import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
 
-typedef NodeBuilder = NodeWidget Function(Node node, List<int> path);
+typedef NodeBuilder<T extends MindMapNode> =
+    NodeWidget Function(T node, List<int> path);
 
 typedef ThemeBuilder = MindMapTheme Function(List<int> path);
 
-class MindMap extends StatelessWidget {
+class MindMap<T extends MindMapNode> extends StatelessWidget {
   const MindMap(
     this.node, {
     super.key,
-    required this.nodeBuilder,
+    required this.nodeWidgetBuilder,
     required this.cntlr,
     required this.path,
     required this.themeBuilder,
@@ -23,40 +24,38 @@ class MindMap extends StatelessWidget {
   const MindMap.root(
     this.node, {
     required super.key,
-    required this.nodeBuilder,
+    required this.nodeWidgetBuilder,
     required this.cntlr,
     required this.themeBuilder,
   }) : path = const [];
 
-  MindMap buildSubTree(Node subNode, {required List<int> subPath}) {
+  MindMap<T> buildSubTree(T subNode, {required List<int> subPath}) {
     return MindMap(
       subNode,
-      nodeBuilder: nodeBuilder,
+      nodeWidgetBuilder: nodeWidgetBuilder,
       cntlr: cntlr,
       path: subPath,
       themeBuilder: themeBuilder,
     );
   }
 
-  final MindMapCntlr cntlr;
+  final MindMapCntlr<T> cntlr;
 
-  final Node node;
+  final T node;
 
   final List<int> path;
 
-  final NodeBuilder nodeBuilder;
+  final NodeBuilder<T> nodeWidgetBuilder;
 
   final ThemeBuilder themeBuilder;
 
   @override
   Widget build(BuildContext context) {
-    // print('构建${rootNode.title}');
+    cntlr.saveNodePath(node, path);
     return ListenableBuilder(
       listenable: cntlr,
       builder: (BuildContext context, _) {
-        final expanded = cntlr.getExpanded(node.id);
-        final childCount = node.subNodes.length;
-        final showExpandButton = node.subNodes.isNotEmpty;
+        final expanded = cntlr.getExpanded(node);
         return Container(
           // TODO 去掉区域背景色
           color: kDebugMode
@@ -66,20 +65,20 @@ class MindMap extends StatelessWidget {
           child: RenderMindMapWidget(
             theme: themeBuilder(path),
             key: UniqueKey(),
-            nodeWidget: nodeBuilder(node, path),
-            expandButton: showExpandButton
+            nodeWidget: nodeWidgetBuilder(node, path),
+            expandButton: node.subNodes.isNotEmpty
                 ? _buildExpandButton(
-                    onTap: () => cntlr.toggleExpand(node),
-                    childCount: childCount,
+                    onTap: () => cntlr.toggleExpanded(node),
+                    childCount: node.subNodes.length,
                   )
                 : SizedBox(),
             subtrees: !expanded
                 ? []
-                : List.generate(childCount, (index) {
-                    final subNode = node.subNodes[index];
+                : List.generate(node.subNodes.length, (index) {
+                    final subNode = node.subNodes[index] as T;
                     return buildSubTree(subNode, subPath: [...path, index]);
                   }),
-            showExpandButton: showExpandButton,
+            showExpandButton: node.subNodes.isNotEmpty,
             expandButtonSize: expandButtonSize,
           ),
         );
