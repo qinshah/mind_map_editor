@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/editor/editor_notifier.dart';
@@ -21,12 +22,22 @@ class _EditorViewState extends State<EditorView> {
   late final _mindMapCntlr = MindMapCntlr<XNode>(
     onNodeChanged: (_) => _editor.save(),
     newNodeBuilder: () => XNode.newInsert(),
+    editDialogBuilder: (XNode value) {
+      // _mindMapCntlr.showEditDialog(value);
+    },
   );
 
   @override
   void initState() {
     context.read<EditorNotifier>().loadSavedMindMap();
+    HardwareKeyboard.instance.addHandler(_mindMapCntlr.onKeyEvent);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_mindMapCntlr.onKeyEvent);
+    super.dispose();
   }
 
   @override

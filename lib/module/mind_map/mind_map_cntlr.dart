@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mind_map_editor/data_model/mind_map_node.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_state.dart';
 
 class MindMapCntlr<Node extends MindMapNode> extends ChangeNotifier {
   final _state = MindMapState<Node>();
 
-  final ValueChanged<Node> onNodeChanged;
+  final ValueChanged<Node>? onNodeChanged;
 
   final Node Function() newNodeBuilder;
 
-  MindMapCntlr({required this.onNodeChanged, required this.newNodeBuilder});
+  MindMapCntlr({
+    this.onNodeChanged,
+    required this.editDialogBuilder,
+    required this.newNodeBuilder,
+  });
 
   bool getExpanded(Node node) => _state.expandedById[node.id] ?? true;
 
@@ -27,9 +32,13 @@ class MindMapCntlr<Node extends MindMapNode> extends ChangeNotifier {
     _state.focusedNode = node;
   }
 
-  void rebuild(Node node) {
-    notifyListeners();
-    onNodeChanged(node);
+  // TODO 换更好的方法
+  final ValueChanged<Node> editDialogBuilder;
+
+  Future<void> showEditDialog(BuildContext context, Widget dialog) async {
+    _state.editingContext = context;
+    await showDialog(context: context, builder: (_) => dialog);
+    _state.editingContext = null;
   }
 
   Node? getParentNode(Node node) {
@@ -44,7 +53,7 @@ class MindMapCntlr<Node extends MindMapNode> extends ChangeNotifier {
     if (parent == null) throw Exception('暂不允许删除没有父节点的节点');
     parent.subNodes.remove(node);
     _state.deleteNodeState(node);
-    onNodeChanged(parent);
+    onNodeChanged?.call(parent);
     foucs(parent);
   }
 
@@ -54,7 +63,7 @@ class MindMapCntlr<Node extends MindMapNode> extends ChangeNotifier {
     // 手动提前保存路径防止UI更新不过来
     saveNodePath(newNode, [..._state.pathById[node.id]!, index]);
     node.subNodes.insert(index, newNode);
-    onNodeChanged(node);
+    onNodeChanged?.call(node);
     foucs(newNode);
   }
 
@@ -66,4 +75,35 @@ class MindMapCntlr<Node extends MindMapNode> extends ChangeNotifier {
   }
 
   void saveNodePath(node, List<int> path) => _state.saveNodePath(node, path);
+
+  bool onKeyEvent(KeyEvent event) {
+    final node = focusedNode();
+    if (node == null || event is! KeyDownEvent) return false;
+    if (_state.editingContext != null) {
+      if (event.logicalKey == LogicalKeyboardKey.enter) {
+        if (HardwareKeyboard.instance.isShiftPressed) return false;
+        Navigator.of(_state.editingContext!).pop();
+        return true;
+      }
+      return false;
+    }
+    final parent = getParentNode(node);
+    switch (event.logicalKey) {
+      case LogicalKeyboardKey.escape:
+        foucs(null);
+        return true;
+      case LogicalKeyboardKey.tab:
+        insertNodeUnder(node);
+        return true;
+      case LogicalKeyboardKey.enter:
+        parent == null ? insertNodeUnder(node) : insertNodeAfter(node);
+        return true;
+      case LogicalKeyboardKey.delete || LogicalKeyboardKey.backspace:
+        if (parent == null) return false;
+        deleteNode(node);
+        return true;
+      default:
+        return false;
+    }
+  }
 }

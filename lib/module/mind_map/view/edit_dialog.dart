@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
 
-class NodeEditDialog extends StatefulWidget {
-  const NodeEditDialog(this.node, {super.key});
+class EditDialog extends StatefulWidget {
+  const EditDialog(this.node, {super.key});
 
   final XNode node;
 
   @override
-  State<NodeEditDialog> createState() => _NodeEditDialogState();
+  State<EditDialog> createState() => _EditDialogState();
 }
 
-class _NodeEditDialogState extends State<NodeEditDialog> {
+class _EditDialogState extends State<EditDialog> {
   late final _cntlr = TextEditingController(text: widget.node.title);
 
   @override

@@ -5,7 +5,7 @@ import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
 import 'package:mind_map_editor/module/editor/editor_notifier.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
-import 'package:mind_map_editor/module/mind_map/view/node_edit_dialog.dart';
+import 'package:mind_map_editor/module/mind_map/view/edit_dialog.dart';
 import 'package:provider/provider.dart';
 
 class NodeWidget extends StatefulWidget {
@@ -96,13 +96,7 @@ class _NodeWidgetState extends State<NodeWidget> {
       child: IgnorePointer(
         ignoring: !_focused,
         child: GestureDetector(
-          onTap: () async {
-            await showDialog(
-              context: context,
-              builder: (_) => NodeEditDialog(_node),
-            );
-            _cntlr.rebuild(widget.node);
-          },
+          onTap: () async => _cntlr.showEditDialog(context, EditDialog(_node)),
           child: Container(
             padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(

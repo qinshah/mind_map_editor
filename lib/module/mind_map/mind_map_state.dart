@@ -1,5 +1,4 @@
-import 'dart:ui';
-
+import 'package:flutter/widgets.dart';
 import 'package:mind_map_editor/data_model/mind_map_node.dart';
 
 class MindMapState<Node extends MindMapNode> {
@@ -9,6 +8,10 @@ class MindMapState<Node extends MindMapNode> {
   Map<String, List<int>> pathById = {};
 
   Node? focusedNode;
+
+  BuildContext? editingContext;
+
+  BuildContext? context;
 
   void saveNodePath(node, List<int> path) {
     nodeByPath[path.toString()] = node;
