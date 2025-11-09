@@ -7,31 +7,38 @@ class MindMapCntlr extends ChangeNotifier {
   static const uuid = Uuid();
   MindMapState state = MindMapState();
 
+  final ValueChanged<Node> onNodeChanged;
+
+  MindMapCntlr({required this.onNodeChanged});
+
   bool getExpanded(String id) => state.expandeds[id] ?? true;
 
-  void toggleExpand(String id) {
-    notifyListeners();
-    state.expandeds[id] = !getExpanded(id);
+  void toggleExpand(Node node) {
+    state.expandeds[node.id] = !getExpanded(node.id);
+    foucs(node);
   }
 
   bool getFocused(Node node) => state.focusedNode?.id == node.id;
 
-  void foucsNode(Node? node) {
+  void foucs(Node? node) {
     notifyListeners();
     state.focusedNode = node;
   }
 
-  void rebuild() => notifyListeners();
-
-  // TODO：完善树节点的插入删除机制
-  void deleteSelected() {
-    final node = state.focusedNode;
-    if (node == null || node.parent == null) return;
-    node.parent!.subNodes.remove(node);
-    foucsNode(null);
+  void rebuild(Node node) {
+    notifyListeners();
+    onNodeChanged(node);
   }
 
-  void insertSubNode(Node node) {
+  // TODO：完善树节点的插入删除机制
+  void deleteNode(Node node) {
+    assert(node.parent != null, '根节点不能删除');
+    node.parent!.subNodes.remove(node);
+    onNodeChanged(node.parent!);
+    foucs(node.parent!);
+  }
+
+  void insertNodeUnder(Node node) {
     node.children ??= Children(attached: []);
     final subNode = Node(
       id: uuid.v4(),
@@ -40,12 +47,12 @@ class MindMapCntlr extends ChangeNotifier {
       parent: node,
     );
     node.children!.attached.add(subNode);
-    foucsNode(subNode);
+    onNodeChanged(node);
+    foucs(subNode);
   }
 
-  void insertBrotherNode() {
-    final node = state.focusedNode;
-    if (node == null || node.parent == null) return;
-    insertSubNode(node.parent!);
+  void insertNodeAfter(Node node) {
+    assert(node.parent != null, '根节点不能插入兄弟节点');
+    insertNodeUnder(node.parent!);
   }
 }

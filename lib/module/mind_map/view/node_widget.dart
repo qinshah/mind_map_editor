@@ -90,7 +90,7 @@ class _NodeWidgetState extends State<NodeWidget> {
     return InkWell(
       borderRadius: borderRadius,
       onTap: () {
-        if (!_focused) _cntlr.foucsNode(_node);
+        if (!_focused) _cntlr.foucs(_node);
         widget.onTap?.call();
       },
       child: IgnorePointer(
@@ -101,7 +101,7 @@ class _NodeWidgetState extends State<NodeWidget> {
               context: context,
               builder: (_) => NodeEditDialog(_node),
             );
-            _cntlr.rebuild();
+            _cntlr.rebuild(widget.node);
           },
           child: Container(
             padding: const EdgeInsets.all(1),

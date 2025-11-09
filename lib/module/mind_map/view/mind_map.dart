@@ -69,7 +69,7 @@ class MindMap extends StatelessWidget {
             nodeWidget: nodeBuilder(node, path),
             expandButton: showExpandButton
                 ? _buildExpandButton(
-                    onTap: () => cntlr.toggleExpand(node.id),
+                    onTap: () => cntlr.toggleExpand(node),
                     childCount: childCount,
                   )
                 : SizedBox(),

@@ -4,9 +4,9 @@ import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
 import 'package:provider/provider.dart';
 
 class EditorHub extends StatelessWidget {
-  const EditorHub(this.mindMapCntlr, {super.key});
+  const EditorHub(this.mindMap, {super.key});
 
-  final MindMapCntlr mindMapCntlr;
+  final MindMapCntlr mindMap;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class EditorHub extends StatelessWidget {
     final notifier = context.watch<EditorNotifier>();
     final state = notifier.state;
     return ListenableBuilder(
-      listenable: mindMapCntlr,
+      listenable: mindMap,
       builder: (context, _) {
         return Stack(
           alignment: Alignment.center,
@@ -30,24 +30,24 @@ class EditorHub extends StatelessWidget {
                   child: Row(
                     children: [
                       TextButton(
-                        onPressed: mindMapCntlr.state.focusedNode == null
+                        onPressed: mindMap.state.focusedNode == null
                             ? null
-                            : () => mindMapCntlr.insertSubNode(
-                                mindMapCntlr.state.focusedNode!,
+                            : () => mindMap.insertNodeUnder(
+                                mindMap.state.focusedNode!,
                               ),
                         child: Text('子节点'),
                       ),
                       TextButton(
-                        onPressed: mindMapCntlr.insertBrotherNode,
+                        onPressed: mindMap.state.focusedNode?.parent == null
+                            ? null
+                            : () => mindMap.insertNodeAfter,
                         child: Text('兄弟节点'),
                       ),
                       IconButton(
-                        onPressed: mindMapCntlr.deleteSelected,
+                        onPressed: mindMap.state.focusedNode?.parent == null
+                            ? null
+                            : () => mindMap.deleteNode(mindMap.state.focusedNode!),
                         icon: Icon(Icons.delete_outline),
-                      ),
-                      IconButton(
-                        onPressed: notifier.save,
-                        icon: Icon(Icons.save_outlined),
                       ),
                       TextButton(onPressed: notifier.import, child: Text('导入')),
                       TextButton(onPressed: notifier.export, child: Text('导出')),
