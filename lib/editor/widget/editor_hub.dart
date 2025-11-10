@@ -14,59 +14,85 @@ class EditorHub extends StatelessWidget {
     final theme = Theme.of(context);
     final editor = context.watch<EditorNotifier>();
     final state = editor.state;
+    final tCntlr = editor.tCntlr;
     return Stack(
       alignment: Alignment.center,
       children: [
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: barHeight,
-          child: ColoredBox(
-            color: theme.appBarTheme.backgroundColor!,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: FocusScope(
-                canRequestFocus: false,
-                child: Builder(
-                  builder: (context) {
-                    final mindMap = context.watch<MMCntlr<Xnode>>();
-                    final focusedNode = mindMap.focusedNode();
-                    return Row(
-                      children: [
-                        TextButton(
-                          onPressed: focusedNode == null
-                              ? null
-                              : () => mindMap.insertNodeUnder(focusedNode),
-                          child: Text('子节点'),
-                        ),
-                        TextButton(
-                          onPressed:
-                              focusedNode != null &&
-                                  mindMap.getParentNode(focusedNode) != null
-                              ? () => mindMap.insertNodeAfter(focusedNode)
-                              : null,
-                          child: Text('兄弟节点'),
-                        ),
-                        IconButton(
-                          onPressed:
-                              focusedNode != null &&
-                                  mindMap.getParentNode(focusedNode) != null
-                              ? () => mindMap.deleteNode(focusedNode)
-                              : null,
-                          icon: Icon(Icons.delete_outline),
-                        ),
-                        TextButton(onPressed: editor.import, child: Text('导入')),
-                        TextButton(onPressed: editor.export, child: Text('导出')),
-                      ],
-                    );
-                  },
+        if (state.showHub)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: barHeight,
+            child: ColoredBox(
+              color: theme.appBarTheme.backgroundColor!,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: FocusScope(
+                  canRequestFocus: false,
+                  child: Builder(
+                    builder: (context) {
+                      final mindMap = context.watch<MMCntlr<Xnode>>();
+                      final focusedNode = mindMap.focusedNode();
+                      return Row(
+                        children: [
+                          TextButton(
+                            onPressed: focusedNode == null
+                                ? null
+                                : () => mindMap.insertNodeUnder(focusedNode),
+                            child: Text('子节点'),
+                          ),
+                          TextButton(
+                            onPressed:
+                                focusedNode != null &&
+                                    mindMap.getParentNode(focusedNode) != null
+                                ? () => mindMap.insertNodeAfter(focusedNode)
+                                : null,
+                            child: Text('兄弟节点'),
+                          ),
+                          IconButton(
+                            onPressed:
+                                focusedNode != null &&
+                                    mindMap.getParentNode(focusedNode) != null
+                                ? () => mindMap.deleteNode(focusedNode)
+                                : null,
+                            icon: Icon(Icons.delete_outline),
+                          ),
+                          VerticalDivider(),
+                          IconButton(
+                            onPressed: state.scale == tCntlr.maxScale * 100
+                                ? null
+                                : () => tCntlr.zoomIn(scale: 1.5),
+                            icon: Icon(Icons.zoom_in),
+                          ),
+                          IconButton(
+                            onPressed: tCntlr.reset,
+                            icon: Icon(Icons.refresh),
+                          ),
+                          IconButton(
+                            onPressed: state.scale == tCntlr.minScale * 100
+                                ? null
+                                : () => tCntlr.zoomIn(scale: 1 / 1.5),
+                            icon: Icon(Icons.zoom_out),
+                          ),
+                          VerticalDivider(),
+                          TextButton(
+                            onPressed: editor.import,
+                            child: Text('导入'),
+                          ),
+                          TextButton(
+                            onPressed: editor.export,
+                            child: Text('导出'),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        if (state.scaleHubTimer.isActive)
+        if (state.scalingTimer.isActive)
           Positioned(
             top: barHeight,
             child: Card(

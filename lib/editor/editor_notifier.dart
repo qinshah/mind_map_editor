@@ -14,23 +14,33 @@ class EditorNotifier extends ChangeNotifier {
   final state = EditorState();
   final tCntlr = MyTCntlr();
 
-  void updateScale(_) {
-    final scale = (tCntlr.value.getMaxScaleOnAxis() * 100).round();
-    if (scale == state.scale) return;
-    // 重新计时
-    state.scaleHubTimer.cancel();
-    state.scaleHubTimer = Timer(
-      const Duration(seconds: 2),
-      () => notifyListeners(),
-    );
-    notifyListeners();
-    state.scale = scale;
+  EditorNotifier() {
+    _loadSavedData();
+    tCntlr.addListener(_onTransform);
   }
 
   @override
   void dispose() {
     super.dispose();
     tCntlr.dispose();
+  }
+
+  void setShowHub(bool value) {
+    notifyListeners();
+    state.showHub = value;
+  }
+
+  void _onTransform() {
+    final scale = (tCntlr.getCurScale() * 100).round();
+    if (scale == state.scale) return;
+    // 重新计时
+    state.scalingTimer.cancel();
+    state.scalingTimer = Timer(
+      const Duration(seconds: 1),
+      () => notifyListeners(),
+    );
+    notifyListeners();
+    state.scale = scale;
   }
 
   Future<void> import() async {
@@ -44,10 +54,10 @@ class EditorNotifier extends ChangeNotifier {
       FM.supportPath(PathConst.root),
       archivePath: xFile.path,
     );
-    loadSavedMindMap();
+    _loadSavedData();
   }
 
-  Future<void> loadSavedMindMap() async {
+  Future<void> _loadSavedData() async {
     final jsonFile = FM.supportPathFile(
       PathConst.root.join([PathConst.dataName]),
     );

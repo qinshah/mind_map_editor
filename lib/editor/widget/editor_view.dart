@@ -28,7 +28,6 @@ class _EditorViewState extends State<EditorView> {
 
   @override
   void initState() {
-    _editor.loadSavedMindMap();
     HardwareKeyboard.instance.addHandler(_mindMap.onKeyEvent);
     super.initState();
   }
@@ -52,21 +51,23 @@ class _EditorViewState extends State<EditorView> {
         children: [
           LayoutBuilder(
             builder: (context, constraints) {
-              final logicSize = constraints.biggest / _editor.state.minScale;
+              _editor.tCntlr.viewportSize = constraints.biggest;
+              final logicSize = constraints.biggest / _editor.tCntlr.minScale;
               final h = (logicSize.width - _editor.state.mapSize.width) / 2;
               final v = (logicSize.height - _editor.state.mapSize.height) / 2;
               final rootNode = context.select<EditorNotifier, Xnode>((value) {
                 return value.state.xmind.root;
               });
               return InteractiveViewer.builder(
-                onInteractionUpdate: _editor.updateScale,
+                onInteractionStart: (_) => _editor.setShowHub(false),
+                onInteractionEnd: (_) => _editor.setShowHub(true),
                 transformationController: _editor.tCntlr,
-                minScale: _editor.state.minScale,
-                maxScale: _editor.state.maxScale,
+                minScale: _editor.tCntlr.minScale,
+                maxScale: _editor.tCntlr.maxScale,
                 // 让最小倍数时刚好填满视口
                 boundaryMargin: EdgeInsets.fromLTRB(
                   h.clamp(0, 1 / 0),
-                  v.clamp(barHeight / _editor.state.minScale, 1 / 0),
+                  v.clamp(barHeight / _editor.tCntlr.minScale, 1 / 0),
                   h.clamp(0, 1 / 0),
                   v.clamp(0, 1 / 0),
                 ),
