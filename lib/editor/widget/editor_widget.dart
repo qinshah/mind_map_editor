@@ -1,50 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mind_map_editor/mind_map/m_m_theme.dart';
 import 'package:mind_map_editor/xmind/xnode_theme.dart';
 import 'package:mind_map_editor/xmind/xmind.dart';
-import 'package:mind_map_editor/editor/editor_notifier.dart';
+import 'package:mind_map_editor/editor/editor.dart';
 import 'package:mind_map_editor/editor/widget/editor_hub.dart';
-import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
 import 'package:mind_map_editor/mind_map/widget/mind_map.dart';
 import 'package:mind_map_editor/xmind/widget/xnode_widget.dart';
 import 'package:mind_map_editor/common/widget/size_change_notifier.dart';
 import 'package:provider/provider.dart';
 
-class EditorView extends StatefulWidget {
-  const EditorView({super.key});
+class EditorWidget extends StatefulWidget {
+  const EditorWidget({super.key});
 
   @override
-  State<EditorView> createState() => _EditorViewState();
+  State<EditorWidget> createState() => _EditorWidgetState();
 }
 
-class _EditorViewState extends State<EditorView> {
-  final _editor = EditorNotifier();
-  late final _mindMap = MMCntlr<Xnode>(
-    onNodeChanged: (_) => _editor.save(),
-    newNodeBuilder: () => Xnode.newInsert(),
-    editDialogBuilder: (Xnode value) {},
-  );
+class _EditorWidgetState extends State<EditorWidget> {
+  late final _editor = Editor(getContext: () => context);
+  late final _mmCntlr = _editor.mMCnltr;
+
+  final barHeight = 42.0;
 
   @override
   void initState() {
-    HardwareKeyboard.instance.addHandler(_mindMap.onKeyEvent);
     super.initState();
+    _editor.init();
   }
 
   @override
-  void dispose() {
-    HardwareKeyboard.instance.removeHandler(_mindMap.onKeyEvent);
+  dispose() {
     super.dispose();
+    _editor.dispose();
   }
-
-  final barHeight = 42.0;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: _mindMap),
+        ChangeNotifierProvider.value(value: _mmCntlr),
         ChangeNotifierProvider.value(value: _editor),
       ],
       child: Stack(
@@ -55,7 +49,7 @@ class _EditorViewState extends State<EditorView> {
               final logicSize = constraints.biggest / _editor.tCntlr.minScale;
               final h = (logicSize.width - _editor.state.mapSize.width) / 2;
               final v = (logicSize.height - _editor.state.mapSize.height) / 2;
-              final rootNode = context.select<EditorNotifier, Xnode>((value) {
+              final rootNode = context.select<Editor, Xnode>((value) {
                 return value.state.xmind.root;
               });
               return InteractiveViewer.builder(
@@ -76,12 +70,12 @@ class _EditorViewState extends State<EditorView> {
                     onSizeChange: _editor.updateMapSize,
                     child: MindMap<Xnode>.root(
                       rootNode,
-                      cntlr: _mindMap,
+                      cntlr: _mmCntlr,
                       nodeWidgetBuilder: (node, path) {
                         return XnodeWidget(
                           node,
                           theme: _buildNodeTheme(path),
-                          cntlr: _mindMap,
+                          cntlr: _mmCntlr,
                         );
                       },
                       themeBuilder: _buildTheme,

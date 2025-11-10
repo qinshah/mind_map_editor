@@ -7,8 +7,9 @@ class EditorState {
   Xmind xmind = Xmind.empty();
   Timer scalingTimer = Timer(Duration.zero, () {})..cancel();
 
-  int scale = 100;
+  int zoom = 100;
   bool showHub = true;
+  bool editDialogShowing = false;
 
   Size mapSize = Size.zero;
 }

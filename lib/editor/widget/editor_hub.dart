@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mind_map_editor/xmind/xmind.dart';
-import 'package:mind_map_editor/editor/editor_notifier.dart';
+import 'package:mind_map_editor/editor/editor.dart';
 import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
 import 'package:provider/provider.dart';
 
@@ -12,7 +12,7 @@ class EditorHub extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final editor = context.watch<EditorNotifier>();
+    final editor = context.watch<Editor>();
     final state = editor.state;
     final tCntlr = editor.tCntlr;
     return Stack(
@@ -33,34 +33,46 @@ class EditorHub extends StatelessWidget {
                   child: Builder(
                     builder: (context) {
                       final mindMap = context.watch<MMCntlr<Xnode>>();
-                      final focusedNode = mindMap.focusedNode();
+                      final curNode = mindMap.focusedNode();
                       return Row(
                         children: [
                           TextButton(
-                            onPressed: focusedNode == null
+                            onPressed: curNode == null
                                 ? null
-                                : () => mindMap.insertNodeUnder(focusedNode),
+                                : () => mindMap.insertNodeUnder(
+                                    curNode,
+                                    newNode: Xnode.empty('新节点'),
+                                  ),
                             child: Text('子节点'),
                           ),
                           TextButton(
                             onPressed:
-                                focusedNode != null &&
-                                    mindMap.getParentNode(focusedNode) != null
-                                ? () => mindMap.insertNodeAfter(focusedNode)
+                                curNode != null &&
+                                    mindMap.getParentNode(curNode) != null
+                                ? () => mindMap.insertNodeAfter(
+                                    curNode,
+                                    newNode: Xnode.empty('新节点'),
+                                  )
                                 : null,
                             child: Text('兄弟节点'),
                           ),
                           IconButton(
+                            onPressed: curNode == null
+                                ? null
+                                : () => editor.showEditDialog(curNode, context),
+                            icon: Icon(Icons.edit_outlined),
+                          ),
+                          IconButton(
                             onPressed:
-                                focusedNode != null &&
-                                    mindMap.getParentNode(focusedNode) != null
-                                ? () => mindMap.deleteNode(focusedNode)
+                                curNode != null &&
+                                    mindMap.getParentNode(curNode) != null
+                                ? () => mindMap.deleteNode(curNode)
                                 : null,
                             icon: Icon(Icons.delete_outline),
                           ),
                           VerticalDivider(),
                           IconButton(
-                            onPressed: state.scale == tCntlr.maxScale * 100
+                            onPressed: state.zoom == tCntlr.maxScale * 100
                                 ? null
                                 : () => tCntlr.zoomIn(scale: 1.5),
                             icon: Icon(Icons.zoom_in),
@@ -70,7 +82,7 @@ class EditorHub extends StatelessWidget {
                             icon: Icon(Icons.refresh),
                           ),
                           IconButton(
-                            onPressed: state.scale == tCntlr.minScale * 100
+                            onPressed: state.zoom == tCntlr.minScale * 100
                                 ? null
                                 : () => tCntlr.zoomIn(scale: 1 / 1.5),
                             icon: Icon(Icons.zoom_out),
@@ -99,7 +111,7 @@ class EditorHub extends StatelessWidget {
               color: theme.cardColor.withAlpha(91),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text('${state.scale}%'),
+                child: Text('${state.zoom}%'),
               ),
             ),
           ),

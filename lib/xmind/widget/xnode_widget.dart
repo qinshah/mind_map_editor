@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mind_map_editor/editor/widget/edit_dialog.dart';
 import 'package:mind_map_editor/xmind/xnode_theme.dart';
 import 'package:mind_map_editor/xmind/xmind.dart';
-import 'package:mind_map_editor/editor/editor_notifier.dart';
+import 'package:mind_map_editor/editor/editor.dart';
 import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
-import 'package:mind_map_editor/editor/widget/edit_dialog.dart';
 import 'package:provider/provider.dart';
 
 class XnodeWidget extends StatefulWidget {
@@ -31,17 +31,17 @@ class XnodeWidget extends StatefulWidget {
 
 class _XnodeWidgetState extends State<XnodeWidget> {
   late final _node = widget.node;
-  late final _editor = context.read<EditorNotifier>();
+  late final _editor = context.read<Editor>();
   late final _theme = widget.theme;
 
   final _borderRadius = BorderRadius.circular(6);
 
-  late final _cntlr = widget.cntlr;
+  late final _mmCntlr = widget.cntlr;
 
   late bool _focused;
   @override
   Widget build(BuildContext context) {
-    _focused = _cntlr.getFocused(_node);
+    _focused = _mmCntlr.getFocused(_node);
     return DragTarget<Xnode>(
       onMove: (details) {
         final draggingNode = details.data;
@@ -54,7 +54,7 @@ class _XnodeWidgetState extends State<XnodeWidget> {
         return LongPressDraggable(
           data: _node,
           feedback: Transform.scale(
-            scale: _editor.state.scale / 100,
+            scale: _editor.state.zoom / 100,
             child: Material(
               color: Colors.transparent,
               child: _buildChild(_theme, _borderRadius, alpha: 200),
@@ -67,7 +67,11 @@ class _XnodeWidgetState extends State<XnodeWidget> {
     );
   }
 
-  Widget _buildChild(XnodeTheme theme, BorderRadius borderRadius, {int? alpha}) {
+  Widget _buildChild(
+    XnodeTheme theme,
+    BorderRadius borderRadius, {
+    int? alpha,
+  }) {
     final nodeImg = _node.image;
     final contents = [
       if (_node.imgPath != null)
@@ -90,13 +94,21 @@ class _XnodeWidgetState extends State<XnodeWidget> {
     return InkWell(
       borderRadius: borderRadius,
       onTap: () {
-        if (!_focused) _cntlr.foucs(_node);
+        if (!_focused) _mmCntlr.foucs(_node);
         widget.onTap?.call();
       },
       child: IgnorePointer(
         ignoring: !_focused,
         child: GestureDetector(
-          onTap: () async => _cntlr.showEditDialog(context, EditDialog(_node)),
+          onTap: () {
+            _editor.showEditDialog(_node, context);
+            // await showDialog(
+            //   context: context,
+            //   builder: (_) => EditDialog(_node),
+            // );
+            // _mmCntlr.rebuild();
+            // _editor.save();
+          },
           child: Container(
             padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(

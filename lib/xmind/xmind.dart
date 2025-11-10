@@ -32,16 +32,8 @@ class Xnode extends MMNode {
     required this.children,
   });
 
-  Xnode.newInsert()
+  Xnode.empty(this.title)
     : id = XmindConst.uuid.v4(),
-      title = '新节点',
-      titleUnedited = false,
-      children = Children(attached: []),
-      image = null;
-
-  Xnode.root()
-    : id = XmindConst.uuid.v4(),
-      title = '根节点',
       titleUnedited = false,
       children = Children(attached: []),
       image = null;
@@ -136,7 +128,7 @@ class Xmind {
 
   Xmind({required this.root});
 
-  Xmind.empty() : root = Xnode.root();
+  Xmind.empty() : root = Xnode.empty('根节点');
 
   factory Xmind.fromJson(List<dynamic> json) {
     return Xmind(

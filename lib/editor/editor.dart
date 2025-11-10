@@ -2,27 +2,75 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mind_map_editor/common/path_const.dart';
 import 'package:mind_map_editor/common/function/file_manager.dart';
 import 'package:mind_map_editor/editor/editor_state.dart';
 import 'package:file_selector/file_selector.dart';
+import 'package:mind_map_editor/editor/widget/edit_dialog.dart';
+import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
 import 'package:mind_map_editor/xmind/xmind.dart';
 import 'package:mind_map_editor/editor/my_t_cntlr.dart';
 import 'package:share_plus/share_plus.dart';
 
-class EditorNotifier extends ChangeNotifier {
+class Editor extends ChangeNotifier {
   final state = EditorState();
   final tCntlr = MyTCntlr();
+  late final mMCnltr = MMCntlr<Xnode>(onMapChanged: (_) => save());
+  final BuildContext Function() getContext;
 
-  EditorNotifier() {
+  Editor({required this.getContext});
+
+  init() {
     _loadSavedData();
     tCntlr.addListener(_onTransform);
+    HardwareKeyboard.instance.addHandler(onKeyEvent);
   }
 
   @override
   void dispose() {
     super.dispose();
     tCntlr.dispose();
+    tCntlr.removeListener(_onTransform);
+  }
+
+  bool onKeyEvent(KeyEvent event) {
+    final node = mMCnltr.focusedNode();
+    if (node == null || event is! KeyDownEvent) return false;
+    final shiftAndSpace =
+        HardwareKeyboard.instance.isShiftPressed &&
+        event.logicalKey == LogicalKeyboardKey.space;
+    if (state.editDialogShowing) {
+      if (shiftAndSpace) {
+        Navigator.of(getContext()).pop();
+        return true;
+      }
+      return false;
+    }
+    final parent = mMCnltr.getParentNode(node);
+    switch (event.logicalKey) {
+      case LogicalKeyboardKey.escape:
+        mMCnltr.foucs(null);
+        return true;
+      case LogicalKeyboardKey.tab:
+        mMCnltr.insertNodeUnder(node, newNode: Xnode.empty('新节点'));
+        return true;
+      case LogicalKeyboardKey.enter:
+        parent == null
+            ? mMCnltr.insertNodeUnder(node, newNode: Xnode.empty('新节点'))
+            : mMCnltr.insertNodeAfter(node, newNode: Xnode.empty('新节点'));
+        return true;
+      case LogicalKeyboardKey.delete || LogicalKeyboardKey.backspace:
+        if (parent == null) return false;
+        mMCnltr.deleteNode(node);
+        return true;
+      default:
+        if (shiftAndSpace) {
+          showEditDialog(node, getContext());
+          return true;
+        }
+        return false;
+    }
   }
 
   void setShowHub(bool value) {
@@ -31,8 +79,8 @@ class EditorNotifier extends ChangeNotifier {
   }
 
   void _onTransform() {
-    final scale = (tCntlr.getCurScale() * 100).round();
-    if (scale == state.scale) return;
+    final zoom = (tCntlr.getCurScale() * 100).round();
+    if (zoom == state.zoom) return;
     // 重新计时
     state.scalingTimer.cancel();
     state.scalingTimer = Timer(
@@ -40,7 +88,7 @@ class EditorNotifier extends ChangeNotifier {
       () => notifyListeners(),
     );
     notifyListeners();
-    state.scale = scale;
+    state.zoom = zoom;
   }
 
   Future<void> import() async {
@@ -89,5 +137,15 @@ class EditorNotifier extends ChangeNotifier {
     );
     final json = jsonEncode(state.xmind.toJson());
     await jsonFile.writeAsString(json);
+  }
+
+  Future<void> showEditDialog(Xnode node, BuildContext context) async {
+    if (state.editDialogShowing) {
+      print('重复显示，请检查是否为Bug');
+    }
+    state.editDialogShowing = true;
+    await showDialog(context: context, builder: (_) => EditDialog(node));
+    state.editDialogShowing = false;
+    mMCnltr.rebuild();
   }
 }

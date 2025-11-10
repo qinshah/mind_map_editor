@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/editor/widget/editor_view.dart';
+import 'package:mind_map_editor/editor/widget/editor_widget.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -10,7 +10,7 @@ class App extends StatelessWidget {
     // final fTheme = FThemes.blue.light;
     // final fDarkTheme = FThemes.blue.dark;
     return MaterialApp(
-      home: EditorView(),
+      home: EditorWidget(),
       builder: (context, child) {
         return Scaffold(appBar: AppBar(toolbarHeight: 0), body: child);
       },

@@ -9,10 +9,6 @@ class MMState<Node extends MMNode> {
 
   Node? focusedNode;
 
-  BuildContext? editingContext;
-
-  BuildContext? context;
-
   void saveNodePath(node, List<int> path) {
     nodeByPath[path.toString()] = node;
     pathById[node.id] = path;

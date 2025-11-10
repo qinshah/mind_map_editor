@@ -23,6 +23,7 @@ class _EditDialogState extends State<EditDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       content: TextField(
+        autofocus: true,
         maxLines: null,
         controller: _cntlr,
         onChanged: (value) => widget.node.title = value,

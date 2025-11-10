@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mind_map_editor/mind_map/m_m_node.dart';
 import 'package:mind_map_editor/mind_map/m_m_state.dart';
 
 class MMCntlr<Node extends MMNode> extends ChangeNotifier {
   final _state = MMState<Node>();
 
-  final ValueChanged<Node>? onNodeChanged;
+  final ValueChanged<Node>? onMapChanged;
 
-  final Node Function() newNodeBuilder;
-
-  MMCntlr({
-    this.onNodeChanged,
-    required this.editDialogBuilder,
-    required this.newNodeBuilder,
-  });
+  MMCntlr({this.onMapChanged});
 
   bool getExpanded(Node node) => _state.expandedById[node.id] ?? true;
 
@@ -32,16 +25,6 @@ class MMCntlr<Node extends MMNode> extends ChangeNotifier {
     _state.focusedNode = node;
   }
 
-  // TODO 换更好的方法
-  final ValueChanged<Node> editDialogBuilder;
-
-  Future<void> showEditDialog(BuildContext context, Widget dialog) async {
-    _state.editingContext = context;
-    await showDialog(context: context, builder: (_) => dialog);
-    notifyListeners();
-    _state.editingContext = null;
-  }
-
   Node? getParentNode(Node node) {
     final path = _state.pathById[node.id];
     if (path == null || path.isEmpty) return null;
@@ -49,62 +32,43 @@ class MMCntlr<Node extends MMNode> extends ChangeNotifier {
     return _state.nodeByPath[parentPath.toString()];
   }
 
-  void deleteNode(Node node) {
+  Future<void> deleteNode(Node node) async {
     final parent = getParentNode(node);
     if (parent == null) throw Exception('暂不允许删除没有父节点的节点');
-    parent.subNodes.remove(node);
+    final parentSubNodes = parent.subNodes as List<Node>;
+    final lastIndex = parentSubNodes.length - 1;
+    final index = _state.pathById[node.id]!.last;
+    final Node nextFocus;
+    if (index > 0) {
+      nextFocus = parentSubNodes[index - 1];
+    } else if (index < lastIndex) {
+      nextFocus = parentSubNodes[index + 1];
+    } else {
+      nextFocus = parent;
+    }
+    foucs(nextFocus);
+    parentSubNodes.remove(node);
     _state.deleteNodeState(node);
-    onNodeChanged?.call(parent);
-    foucs(parent);
+    onMapChanged?.call(parent);
   }
 
-  void insertNodeUnder(Node node, {int? index}) {
+  void insertNodeUnder(Node node, {int? index, required Node newNode}) {
     index ??= node.subNodes.length;
-    final newNode = newNodeBuilder();
     // 手动提前保存路径防止UI更新不过来
     saveNodePath(newNode, [..._state.pathById[node.id]!, index]);
     node.subNodes.insert(index, newNode);
-    onNodeChanged?.call(node);
+    onMapChanged?.call(node);
     foucs(newNode);
   }
 
-  void insertNodeAfter(Node node) {
+  void insertNodeAfter(Node node, {required Node newNode}) {
     final parent = getParentNode(node);
     if (parent == null) throw Exception('没有父节点的节点无法插入兄弟节点');
     final insertIndex = _state.pathById[node.id]!.last + 1;
-    insertNodeUnder(parent, index: insertIndex);
+    insertNodeUnder(parent, newNode: newNode, index: insertIndex);
   }
 
   void saveNodePath(node, List<int> path) => _state.saveNodePath(node, path);
 
-  bool onKeyEvent(KeyEvent event) {
-    final node = focusedNode();
-    if (node == null || event is! KeyDownEvent) return false;
-    if (_state.editingContext != null) {
-      if (event.logicalKey == LogicalKeyboardKey.enter) {
-        if (HardwareKeyboard.instance.isShiftPressed) return false;
-        Navigator.of(_state.editingContext!).pop();
-        return true;
-      }
-      return false;
-    }
-    final parent = getParentNode(node);
-    switch (event.logicalKey) {
-      case LogicalKeyboardKey.escape:
-        foucs(null);
-        return true;
-      case LogicalKeyboardKey.tab:
-        insertNodeUnder(node);
-        return true;
-      case LogicalKeyboardKey.enter:
-        parent == null ? insertNodeUnder(node) : insertNodeAfter(node);
-        return true;
-      case LogicalKeyboardKey.delete || LogicalKeyboardKey.backspace:
-        if (parent == null) return false;
-        deleteNode(node);
-        return true;
-      default:
-        return false;
-    }
-  }
+  void rebuild() => notifyListeners();
 }
