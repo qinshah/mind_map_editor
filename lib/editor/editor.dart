@@ -18,11 +18,14 @@ class Editor extends ChangeNotifier {
   final tCntlr = MyTCntlr();
   late final mMCnltr = MMCntlr<Xnode>(onMapChanged: (_) => save());
   final BuildContext Function() getContext;
+  final dataFile = FM.supportPathFile(
+    PathConst.root.join([PathConst.dataName]),
+  );
 
   Editor({required this.getContext});
 
   init() {
-    _loadSavedData();
+    _loadLocalData();
     tCntlr.addListener(_onTransform);
     HardwareKeyboard.instance.addHandler(onKeyEvent);
   }
@@ -102,14 +105,15 @@ class Editor extends ChangeNotifier {
       FM.supportPath(PathConst.root),
       archivePath: xFile.path,
     );
-    _loadSavedData();
+    _loadLocalData();
   }
 
-  Future<void> _loadSavedData() async {
-    final jsonFile = FM.supportPathFile(
-      PathConst.root.join([PathConst.dataName]),
-    );
-    final xmind = Xmind.fromJson(jsonDecode(await jsonFile.readAsString()));
+  Future<void> _loadLocalData() async {
+    if (!await dataFile.exists()) {
+      await dataFile.create(recursive: true);
+      return;
+    }
+    final xmind = Xmind.fromJson(jsonDecode(await dataFile.readAsString()));
     notifyListeners();
     state.xmind = xmind;
   }
@@ -132,11 +136,8 @@ class Editor extends ChangeNotifier {
   }
 
   Future<void> save() async {
-    final jsonFile = FM.supportPathFile(
-      PathConst.root.join([PathConst.dataName]),
-    );
     final json = jsonEncode(state.xmind.toJson());
-    await jsonFile.writeAsString(json);
+    await dataFile.writeAsString(json);
   }
 
   Future<void> showEditDialog(Xnode node, BuildContext context) async {
@@ -146,6 +147,7 @@ class Editor extends ChangeNotifier {
     state.editDialogShowing = true;
     await showDialog(context: context, builder: (_) => EditDialog(node));
     state.editDialogShowing = false;
+    save();
     mMCnltr.rebuild();
   }
 }

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/editor/widget/edit_dialog.dart';
 import 'package:mind_map_editor/xmind/xnode_theme.dart';
 import 'package:mind_map_editor/xmind/xmind.dart';
 import 'package:mind_map_editor/editor/editor.dart';

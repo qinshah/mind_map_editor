@@ -15,11 +15,13 @@ class App extends StatelessWidget {
         return Scaffold(appBar: AppBar(toolbarHeight: 0), body: child);
       },
       theme: ThemeData(
+        dividerTheme: DividerThemeData(color: Colors.grey),
         appBarTheme: AppBarTheme(backgroundColor: Color(0xffEEF0F2)),
         primaryColor: mColor,
         colorScheme: ColorScheme.fromSeed(seedColor: mColor),
       ),
       darkTheme: ThemeData(
+        dividerTheme: DividerThemeData(color: Colors.grey),
         appBarTheme: AppBarTheme(backgroundColor: Colors.grey.shade800),
         brightness: Brightness.dark,
         primaryColor: mColor,
