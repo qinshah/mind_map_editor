@@ -18,72 +18,80 @@ class EditorView extends StatefulWidget {
 }
 
 class _EditorViewState extends State<EditorView> {
-  late EditorNotifier _editor;
-  late final _mindMapCntlr = MindMapCntlr<XNode>(
+  final _editor = EditorNotifier();
+  late final _mindMap = MindMapCntlr<XNode>(
     onNodeChanged: (_) => _editor.save(),
     newNodeBuilder: () => XNode.newInsert(),
-    editDialogBuilder: (XNode value) {
-      // _mindMapCntlr.showEditDialog(value);
-    },
+    editDialogBuilder: (XNode value) {},
   );
 
   @override
   void initState() {
-    context.read<EditorNotifier>().loadSavedMindMap();
-    HardwareKeyboard.instance.addHandler(_mindMapCntlr.onKeyEvent);
+    _editor.loadSavedMindMap();
+    HardwareKeyboard.instance.addHandler(_mindMap.onKeyEvent);
     super.initState();
   }
 
   @override
   void dispose() {
-    HardwareKeyboard.instance.removeHandler(_mindMapCntlr.onKeyEvent);
+    HardwareKeyboard.instance.removeHandler(_mindMap.onKeyEvent);
     super.dispose();
   }
 
+  final barHeight = 42.0;
+
   @override
   Widget build(BuildContext context) {
-    _editor = context.watch<EditorNotifier>();
-    final state = _editor.state;
-    return Stack(
-      children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final logicSize = constraints.biggest / state.minScale;
-            final hMargin = (logicSize.width - state.mindMapSize.width) / 2;
-            final vMargin = (logicSize.height - state.mindMapSize.height) / 2;
-            return InteractiveViewer.builder(
-              onInteractionUpdate: _editor.updateScale,
-              transformationController: _editor.tCntlr,
-              minScale: state.minScale,
-              maxScale: state.maxScale,
-              // 让最小倍数时刚好填满视口
-              boundaryMargin: EdgeInsets.symmetric(
-                horizontal: hMargin > 0 ? hMargin : 0,
-                vertical: vMargin > 0 ? vMargin : 0,
-              ),
-              builder: (context, _) => SizeChangeNotifier(
-                onSizeChange: _editor.updateMindMapSize,
-                child: FocusScope(
-                  child: MindMap<XNode>.root(
-                    state.xmind.root,
-                    cntlr: _mindMapCntlr,
-                    key: ValueKey(state.xmind.hashCode),
-                    nodeWidgetBuilder: (node, path) {
-                      return NodeWidget(
-                        node,
-                        theme: _buildNodeTheme(path),
-                        cntlr: _mindMapCntlr,
-                      );
-                    },
-                    themeBuilder: _buildTheme,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-        EditorHub(_mindMapCntlr),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: _mindMap),
+        ChangeNotifierProvider.value(value: _editor),
       ],
+      child: Stack(
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final logicSize = constraints.biggest / _editor.state.minScale;
+              final h = (logicSize.width - _editor.state.mapSize.width) / 2;
+              final v = (logicSize.height - _editor.state.mapSize.height) / 2;
+              final rootNode = context.select<EditorNotifier, XNode>((value) {
+                return value.state.xmind.root;
+              });
+              return InteractiveViewer.builder(
+                onInteractionUpdate: _editor.updateScale,
+                transformationController: _editor.tCntlr,
+                minScale: _editor.state.minScale,
+                maxScale: _editor.state.maxScale,
+                // 让最小倍数时刚好填满视口
+                boundaryMargin: EdgeInsets.fromLTRB(
+                  h.clamp(0, 1 / 0),
+                  v.clamp(barHeight / _editor.state.minScale, 1 / 0),
+                  h.clamp(0, 1 / 0),
+                  v.clamp(0, 1 / 0),
+                ),
+                builder: (context, _) {
+                  return SizeChangeNotifier(
+                    onSizeChange: _editor.updateMapSize,
+                    child: MindMap<XNode>.root(
+                      rootNode,
+                      cntlr: _mindMap,
+                      nodeWidgetBuilder: (node, path) {
+                        return NodeWidget(
+                          node,
+                          theme: _buildNodeTheme(path),
+                          cntlr: _mindMap,
+                        );
+                      },
+                      themeBuilder: _buildTheme,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          EditorHub(barHeight: barHeight),
+        ],
+      ),
     );
   }
 

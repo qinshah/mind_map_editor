@@ -4,10 +4,9 @@ import 'package:flutter/rendering.dart';
 import 'package:mind_map_editor/data_model/mind_map_node.dart';
 import 'package:mind_map_editor/data_model/mind_map_theme.dart';
 import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
-import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
 
 typedef NodeBuilder<T extends MindMapNode> =
-    NodeWidget Function(T node, List<int> path);
+    Widget Function(T node, List<int> path);
 
 typedef ThemeBuilder = MindMapTheme Function(List<int> path);
 
@@ -23,7 +22,7 @@ class MindMap<T extends MindMapNode> extends StatelessWidget {
 
   const MindMap.root(
     this.node, {
-    required super.key,
+     super.key,
     required this.nodeWidgetBuilder,
     required this.cntlr,
     required this.themeBuilder,
@@ -128,7 +127,7 @@ class RenderMindMapWidget extends MultiChildRenderObjectWidget {
   @override
   List<Widget> get children => [nodeWidget, expandButton, ...subtrees];
 
-  final NodeWidget nodeWidget;
+  final Widget nodeWidget;
 
   final Widget expandButton;
 

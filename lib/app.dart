@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/module/editor/editor_notifier.dart';
 import 'package:mind_map_editor/module/editor/view/editor_view.dart';
-import 'package:provider/provider.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -12,10 +10,7 @@ class App extends StatelessWidget {
     // final fTheme = FThemes.blue.light;
     // final fDarkTheme = FThemes.blue.dark;
     return MaterialApp(
-      home: ChangeNotifierProvider(
-        create: (_) => EditorNotifier(),
-        child: EditorView(),
-      ),
+      home: EditorView(),
       builder: (context, child) {
         return Scaffold(appBar: AppBar(toolbarHeight: 0), body: child);
       },

@@ -11,7 +11,7 @@ class EditorState {
 
   late Offset origin = Offset.zero;
 
-  Size mindMapSize = Size.zero;
+  Size mapSize = Size.zero;
 
   final minScale = 0.2;
 

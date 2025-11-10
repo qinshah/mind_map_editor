@@ -38,6 +38,7 @@ class MindMapCntlr<Node extends MindMapNode> extends ChangeNotifier {
   Future<void> showEditDialog(BuildContext context, Widget dialog) async {
     _state.editingContext = context;
     await showDialog(context: context, builder: (_) => dialog);
+    notifyListeners();
     _state.editingContext = null;
   }
 

@@ -7,11 +7,12 @@ import 'package:mind_map_editor/function/file_manager.dart';
 import 'package:mind_map_editor/module/editor/editor_state.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:mind_map_editor/data_model/xmind.dart';
+import 'package:mind_map_editor/module/editor/my_t_cntlr.dart';
 import 'package:share_plus/share_plus.dart';
 
 class EditorNotifier extends ChangeNotifier {
   final state = EditorState();
-  final tCntlr = TransformationController();
+  final tCntlr = MyTCntlr();
 
   void updateScale(_) {
     final scale = (tCntlr.value.getMaxScaleOnAxis() * 100).round();
@@ -65,10 +66,11 @@ class EditorNotifier extends ChangeNotifier {
     Share.shareXFiles([XFile(tempMindPath)]);
   }
 
-  Future<void> updateMindMapSize(Size value) async {
-    await Future.delayed(Durations.medium1); // 防止build未结束就rebuild
-    notifyListeners();
-    state.mindMapSize = value;
+  void updateMapSize(Size value) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+      state.mapSize = value;
+    });
   }
 
   Future<void> save() async {
