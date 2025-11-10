@@ -1,16 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:mind_map_editor/data_model/mind_map_node.dart';
-import 'package:mind_map_editor/data_model/mind_map_theme.dart';
-import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
+import 'package:mind_map_editor/mind_map/m_m_node.dart';
+import 'package:mind_map_editor/mind_map/m_m_theme.dart';
+import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
 
-typedef NodeBuilder<T extends MindMapNode> =
+typedef NodeBuilder<T extends MMNode> =
     Widget Function(T node, List<int> path);
 
-typedef ThemeBuilder = MindMapTheme Function(List<int> path);
+typedef ThemeBuilder = MMTheme Function(List<int> path);
 
-class MindMap<T extends MindMapNode> extends StatelessWidget {
+class MindMap<T extends MMNode> extends StatelessWidget {
   const MindMap(
     this.node, {
     super.key,
@@ -38,7 +38,7 @@ class MindMap<T extends MindMapNode> extends StatelessWidget {
     );
   }
 
-  final MindMapCntlr<T> cntlr;
+  final MMCntlr<T> cntlr;
 
   final T node;
 
@@ -120,7 +120,7 @@ class RenderMindMapWidget extends MultiChildRenderObjectWidget {
     required this.expandButtonSize,
   });
 
-  final MindMapTheme theme;
+  final MMTheme theme;
 
   final bool showExpandButton;
 
@@ -159,7 +159,7 @@ class RenderMindMap extends RenderBox
 
   final bool showExpandButton;
 
-  final MindMapTheme theme;
+  final MMTheme theme;
 
   RenderMindMap({
     required this.expandButtonSize,

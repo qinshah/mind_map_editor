@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/data/path_const.dart';
-import 'package:mind_map_editor/function/file_manager.dart';
-import 'package:mind_map_editor/module/editor/editor_state.dart';
+import 'package:mind_map_editor/common/path_const.dart';
+import 'package:mind_map_editor/common/function/file_manager.dart';
+import 'package:mind_map_editor/editor/editor_state.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:mind_map_editor/data_model/xmind.dart';
-import 'package:mind_map_editor/module/editor/my_t_cntlr.dart';
+import 'package:mind_map_editor/xmind/xmind.dart';
+import 'package:mind_map_editor/editor/my_t_cntlr.dart';
 import 'package:share_plus/share_plus.dart';
 
 class EditorNotifier extends ChangeNotifier {

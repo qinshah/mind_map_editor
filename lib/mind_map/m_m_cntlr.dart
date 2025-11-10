@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mind_map_editor/data_model/mind_map_node.dart';
-import 'package:mind_map_editor/module/mind_map/mind_map_state.dart';
+import 'package:mind_map_editor/mind_map/m_m_node.dart';
+import 'package:mind_map_editor/mind_map/m_m_state.dart';
 
-class MindMapCntlr<Node extends MindMapNode> extends ChangeNotifier {
-  final _state = MindMapState<Node>();
+class MMCntlr<Node extends MMNode> extends ChangeNotifier {
+  final _state = MMState<Node>();
 
   final ValueChanged<Node>? onNodeChanged;
 
   final Node Function() newNodeBuilder;
 
-  MindMapCntlr({
+  MMCntlr({
     this.onNodeChanged,
     required this.editDialogBuilder,
     required this.newNodeBuilder,

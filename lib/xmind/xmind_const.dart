@@ -1,5 +1,5 @@
 import 'package:uuid/uuid.dart';
 
-abstract class Const {
+abstract class XmindConst {
   static const uuid = Uuid();
 }

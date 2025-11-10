@@ -1,12 +1,12 @@
-import 'package:mind_map_editor/data/const.dart';
-import 'package:mind_map_editor/data/path_const.dart';
-import 'package:mind_map_editor/data_model/mind_map_node.dart';
-import 'package:mind_map_editor/function/file_manager.dart';
+import 'package:mind_map_editor/xmind/xmind_const.dart';
+import 'package:mind_map_editor/common/path_const.dart';
+import 'package:mind_map_editor/mind_map/m_m_node.dart';
+import 'package:mind_map_editor/common/function/file_manager.dart';
 
 // 扩展
 final _imgStartPath = PathConst.root.join([PathConst.resName]);
 
-extension XNodeExt on XNode {
+extension XnodeExt on Xnode {
   String? get imgPath {
     if (image == null) return null;
     return FM.supportPath(
@@ -15,16 +15,16 @@ extension XNodeExt on XNode {
   }
 }
 
-class XNode extends MindMapNode {
+class Xnode extends MMNode {
   @override
   final String id;
   String title;
   bool titleUnedited;
   Children children;
 
-  NodeImg? image;
+  XnodeImg? image;
 
-  XNode({
+  Xnode({
     required this.id,
     required this.image,
     required this.title,
@@ -32,23 +32,23 @@ class XNode extends MindMapNode {
     required this.children,
   });
 
-  XNode.newInsert()
-    : id = Const.uuid.v4(),
+  Xnode.newInsert()
+    : id = XmindConst.uuid.v4(),
       title = '新节点',
       titleUnedited = false,
       children = Children(attached: []),
       image = null;
 
-  XNode.root()
-    : id = Const.uuid.v4(),
+  Xnode.root()
+    : id = XmindConst.uuid.v4(),
       title = '根节点',
       titleUnedited = false,
       children = Children(attached: []),
       image = null;
 
-  factory XNode.fromJson(Map<String, dynamic> json) {
-    final node = XNode(
-      image: NodeImg.fromJson(json['image']),
+  factory Xnode.fromJson(Map<String, dynamic> json) {
+    final node = Xnode(
+      image: XnodeImg.fromJson(json['image']),
       id: json['id'],
       title: json['title'],
       titleUnedited: json['titleUnedited'] ?? false,
@@ -67,27 +67,27 @@ class XNode extends MindMapNode {
   }
 
   @override
-  List<XNode> get subNodes => children.attached;
+  List<Xnode> get subNodes => children.attached;
 }
 
-class NodeImg {
+class XnodeImg {
   String src;
   ImgAlign align;
 
   double? width;
   double? height;
 
-  NodeImg({
+  XnodeImg({
     required this.src,
     required this.align,
     required this.width,
     required this.height,
   });
 
-  static NodeImg? fromJson(Map<String, dynamic>? json) {
+  static XnodeImg? fromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
 
-    return NodeImg(
+    return XnodeImg(
       src: json['src'],
       align: switch (json['align']) {
         'top' => ImgAlign.top,
@@ -112,7 +112,7 @@ class NodeImg {
 enum ImgAlign { top, bottom, left, right }
 
 class Children {
-  List<XNode> attached;
+  List<Xnode> attached;
 
   Children({required this.attached});
 
@@ -121,7 +121,7 @@ class Children {
     final attachedMaps = json['attached'] as List;
     return Children(
       attached: List.generate(attachedMaps.length, (index) {
-        return XNode.fromJson(attachedMaps[index]);
+        return Xnode.fromJson(attachedMaps[index]);
       }),
     );
   }
@@ -132,15 +132,15 @@ class Children {
 }
 
 class Xmind {
-  final XNode root;
+  final Xnode root;
 
   Xmind({required this.root});
 
-  Xmind.empty() : root = XNode.root();
+  Xmind.empty() : root = Xnode.root();
 
   factory Xmind.fromJson(List<dynamic> json) {
     return Xmind(
-      root: XNode.fromJson(json[0]['rootTopic'] as Map<String, dynamic>),
+      root: Xnode.fromJson(json[0]['rootTopic'] as Map<String, dynamic>),
     );
   }
 

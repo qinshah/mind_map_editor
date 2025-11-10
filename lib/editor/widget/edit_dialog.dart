@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/data_model/xmind.dart';
+import 'package:mind_map_editor/xmind/xmind.dart';
 
 class EditDialog extends StatefulWidget {
   const EditDialog(this.node, {super.key});
 
-  final XNode node;
+  final Xnode node;
 
   @override
   State<EditDialog> createState() => _EditDialogState();

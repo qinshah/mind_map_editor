@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mind_map_editor/data_model/mind_map_theme.dart';
-import 'package:mind_map_editor/data_model/xmind.dart';
-import 'package:mind_map_editor/module/editor/editor_notifier.dart';
-import 'package:mind_map_editor/module/editor/view/editor_hub.dart';
-import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
-import 'package:mind_map_editor/module/mind_map/view/mind_map.dart';
-import 'package:mind_map_editor/module/mind_map/view/node_widget.dart';
-import 'package:mind_map_editor/widget/size_change_notifier.dart';
+import 'package:mind_map_editor/mind_map/m_m_theme.dart';
+import 'package:mind_map_editor/xmind/xnode_theme.dart';
+import 'package:mind_map_editor/xmind/xmind.dart';
+import 'package:mind_map_editor/editor/editor_notifier.dart';
+import 'package:mind_map_editor/editor/widget/editor_hub.dart';
+import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
+import 'package:mind_map_editor/mind_map/widget/mind_map.dart';
+import 'package:mind_map_editor/xmind/widget/xnode_widget.dart';
+import 'package:mind_map_editor/common/widget/size_change_notifier.dart';
 import 'package:provider/provider.dart';
 
 class EditorView extends StatefulWidget {
@@ -19,10 +20,10 @@ class EditorView extends StatefulWidget {
 
 class _EditorViewState extends State<EditorView> {
   final _editor = EditorNotifier();
-  late final _mindMap = MindMapCntlr<XNode>(
+  late final _mindMap = MMCntlr<Xnode>(
     onNodeChanged: (_) => _editor.save(),
-    newNodeBuilder: () => XNode.newInsert(),
-    editDialogBuilder: (XNode value) {},
+    newNodeBuilder: () => Xnode.newInsert(),
+    editDialogBuilder: (Xnode value) {},
   );
 
   @override
@@ -54,7 +55,7 @@ class _EditorViewState extends State<EditorView> {
               final logicSize = constraints.biggest / _editor.state.minScale;
               final h = (logicSize.width - _editor.state.mapSize.width) / 2;
               final v = (logicSize.height - _editor.state.mapSize.height) / 2;
-              final rootNode = context.select<EditorNotifier, XNode>((value) {
+              final rootNode = context.select<EditorNotifier, Xnode>((value) {
                 return value.state.xmind.root;
               });
               return InteractiveViewer.builder(
@@ -72,11 +73,11 @@ class _EditorViewState extends State<EditorView> {
                 builder: (context, _) {
                   return SizeChangeNotifier(
                     onSizeChange: _editor.updateMapSize,
-                    child: MindMap<XNode>.root(
+                    child: MindMap<Xnode>.root(
                       rootNode,
                       cntlr: _mindMap,
                       nodeWidgetBuilder: (node, path) {
-                        return NodeWidget(
+                        return XnodeWidget(
                           node,
                           theme: _buildNodeTheme(path),
                           cntlr: _mindMap,
@@ -95,16 +96,16 @@ class _EditorViewState extends State<EditorView> {
     );
   }
 
-  MindMapTheme _buildTheme(List<int> path) => switch (path.length) {
+  MMTheme _buildTheme(List<int> path) => switch (path.length) {
     // 根节点
-    0 => MindMapTheme(spacingBetweenSubTree: 20, spacingWithSubTree: 40),
+    0 => MMTheme(spacingBetweenSubTree: 20, spacingWithSubTree: 40),
     // 根节点的子节点
-    1 => MindMapTheme(spacingBetweenSubTree: 10, spacingWithSubTree: 30),
+    1 => MMTheme(spacingBetweenSubTree: 10, spacingWithSubTree: 30),
     // 后续节点
-    int() => MindMapTheme(),
+    int() => MMTheme(),
   };
 
-  NodeTheme _buildNodeTheme(List<int> path) {
+  XnodeTheme _buildNodeTheme(List<int> path) {
     final depth = path.length;
     final color =
         // 根节点
@@ -119,7 +120,7 @@ class _EditorViewState extends State<EditorView> {
         : Colors.white;
     return switch (depth) {
       // 根节点
-      0 => NodeTheme(
+      0 => XnodeTheme(
         color: color,
         textStyle: TextStyle(
           color: textColor,
@@ -129,7 +130,7 @@ class _EditorViewState extends State<EditorView> {
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       ),
       // 一级分支节点
-      1 => NodeTheme(
+      1 => XnodeTheme(
         color: color,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         textStyle: TextStyle(
@@ -138,7 +139,7 @@ class _EditorViewState extends State<EditorView> {
           fontWeight: FontWeight.w600,
         ),
       ),
-      int() => NodeTheme(
+      int() => XnodeTheme(
         color: color,
         textStyle: TextStyle(color: textColor),
       ),

@@ -1,15 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/data_model/mind_map_theme.dart';
-import 'package:mind_map_editor/data_model/xmind.dart';
-import 'package:mind_map_editor/module/editor/editor_notifier.dart';
-import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
-import 'package:mind_map_editor/module/mind_map/view/edit_dialog.dart';
+import 'package:mind_map_editor/xmind/xnode_theme.dart';
+import 'package:mind_map_editor/xmind/xmind.dart';
+import 'package:mind_map_editor/editor/editor_notifier.dart';
+import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
+import 'package:mind_map_editor/editor/widget/edit_dialog.dart';
 import 'package:provider/provider.dart';
 
-class NodeWidget extends StatefulWidget {
-  const NodeWidget(
+class XnodeWidget extends StatefulWidget {
+  const XnodeWidget(
     this.node, {
     super.key,
     this.onTap,
@@ -19,17 +19,17 @@ class NodeWidget extends StatefulWidget {
 
   final VoidCallback? onTap;
 
-  final XNode node;
+  final Xnode node;
 
-  final NodeTheme theme;
+  final XnodeTheme theme;
 
-  final MindMapCntlr cntlr;
+  final MMCntlr cntlr;
 
   @override
-  State<NodeWidget> createState() => _NodeWidgetState();
+  State<XnodeWidget> createState() => _XnodeWidgetState();
 }
 
-class _NodeWidgetState extends State<NodeWidget> {
+class _XnodeWidgetState extends State<XnodeWidget> {
   late final _node = widget.node;
   late final _editor = context.read<EditorNotifier>();
   late final _theme = widget.theme;
@@ -42,7 +42,7 @@ class _NodeWidgetState extends State<NodeWidget> {
   @override
   Widget build(BuildContext context) {
     _focused = _cntlr.getFocused(_node);
-    return DragTarget<XNode>(
+    return DragTarget<Xnode>(
       onMove: (details) {
         final draggingNode = details.data;
         if (draggingNode.id == _node.id) return;
@@ -67,7 +67,7 @@ class _NodeWidgetState extends State<NodeWidget> {
     );
   }
 
-  Widget _buildChild(NodeTheme theme, BorderRadius borderRadius, {int? alpha}) {
+  Widget _buildChild(XnodeTheme theme, BorderRadius borderRadius, {int? alpha}) {
     final nodeImg = _node.image;
     final contents = [
       if (_node.imgPath != null)

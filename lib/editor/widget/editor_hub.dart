@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/data_model/xmind.dart';
-import 'package:mind_map_editor/module/editor/editor_notifier.dart';
-import 'package:mind_map_editor/module/mind_map/mind_map_cntlr.dart';
+import 'package:mind_map_editor/xmind/xmind.dart';
+import 'package:mind_map_editor/editor/editor_notifier.dart';
+import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
 import 'package:provider/provider.dart';
 
 class EditorHub extends StatelessWidget {
@@ -30,7 +30,7 @@ class EditorHub extends StatelessWidget {
                 canRequestFocus: false,
                 child: Builder(
                   builder: (context) {
-                    final mindMap = context.watch<MindMapCntlr<XNode>>();
+                    final mindMap = context.watch<MMCntlr<Xnode>>();
                     final focusedNode = mindMap.focusedNode();
                     return Row(
                       children: [

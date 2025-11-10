@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mind_map_editor/module/editor/view/editor_view.dart';
+import 'package:mind_map_editor/editor/widget/editor_view.dart';
 
 class App extends StatelessWidget {
   const App({super.key});

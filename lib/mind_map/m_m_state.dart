@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
-import 'package:mind_map_editor/data_model/mind_map_node.dart';
+import 'package:mind_map_editor/mind_map/m_m_node.dart';
 
-class MindMapState<Node extends MindMapNode> {
+class MMState<Node extends MMNode> {
   Map<String, bool> expandedById = {};
   Map<String, Size> sizeById = {};
   Map<String, Node> nodeByPath = {};
