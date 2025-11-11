@@ -5,7 +5,7 @@ import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
 import 'package:provider/provider.dart';
 
 class EditorHub extends StatelessWidget {
-  const EditorHub({super.key, this.barHeight = 42});
+  const EditorHub({super.key, required this.barHeight});
 
   final double barHeight;
 
@@ -37,18 +37,21 @@ class EditorHub extends StatelessWidget {
                       final node = mindMap.focusedNode();
                       return Row(
                         children: [
-                          // TODO 换图标
-                          TextButton(
-                            onPressed: node == null
+                          SizedBox(width: 8),
+                          _button(
+                            '子节点',
+                            Icons.add,
+                            onTap: node == null
                                 ? null
                                 : () => mindMap.insertNodeUnder(
                                     node,
                                     newNode: Xnode.empty('新节点'),
                                   ),
-                            child: Text('子节点'),
                           ),
-                          TextButton(
-                            onPressed:
+                          _button(
+                            '同级节点',
+                            Icons.add,
+                            onTap:
                                 node != null &&
                                     mindMap.getParentNode(node) != null
                                 ? () => mindMap.insertNodeAfter(
@@ -56,13 +59,17 @@ class EditorHub extends StatelessWidget {
                                     newNode: Xnode.empty('新节点'),
                                   )
                                 : null,
-                            child: Text('兄弟节点'),
                           ),
-                          TextButton(
-                            onPressed: node == null
+                          _button(
+                            node == null || mindMap.getExpanded(node)
+                                ? '收起'
+                                : '展开',
+                            node == null || mindMap.getExpanded(node)
+                                ? Icons.expand_more
+                                : Icons.expand_less,
+                            onTap: node == null || node.subNodes.isEmpty
                                 ? null
                                 : () => mindMap.toggleExpanded(node),
-                            child: Text('展开收起'),
                           ),
                           IconButton(
                             onPressed: node == null
@@ -104,6 +111,7 @@ class EditorHub extends StatelessWidget {
                             onPressed: editor.export,
                             child: Text('导出'),
                           ),
+                          SizedBox(width: 8),
                         ],
                       );
                     },
@@ -124,6 +132,22 @@ class EditorHub extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _button(String title, IconData icon, {VoidCallback? onTap}) {
+    return TextButton(
+      onPressed: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 2),
+          Icon(icon),
+          SizedBox(height: 2),
+          Text(title, style: TextStyle(fontSize: 12)),
+          SizedBox(height: 2),
+        ],
+      ),
     );
   }
 }

@@ -66,6 +66,8 @@ class _XnodeWidgetState extends State<XnodeWidget> {
     );
   }
 
+  static const defaultImgSize = 200.0;
+
   Widget _buildChild(
     XnodeTheme theme,
     BorderRadius borderRadius, {
@@ -76,9 +78,8 @@ class _XnodeWidgetState extends State<XnodeWidget> {
       if (_node.imgPath != null)
         Image.file(
           File(_node.imgPath!),
-          // TODO 默认尺寸
-          width: nodeImg!.width ?? 200,
-          height: nodeImg.height ?? 200,
+          width: nodeImg!.width ?? defaultImgSize,
+          height: nodeImg.height ?? defaultImgSize,
         ),
       Text(_node.title, style: theme.textStyle),
     ];

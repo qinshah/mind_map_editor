@@ -20,7 +20,7 @@ class _EditorWidgetState extends State<EditorWidget> {
   late final _editor = Editor(getContext: () => context);
   late final _mmCntlr = _editor.mMCnltr;
 
-  final barHeight = 42.0;
+  final barHeight = 50.0;
 
   @override
   void initState() {

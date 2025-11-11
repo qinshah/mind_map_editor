@@ -155,7 +155,7 @@ class Editor extends ChangeNotifier {
 
   Future<void> showEditDialog(Xnode node, BuildContext context) async {
     if (state.editDialogShowing) {
-      print('重复显示，请检查是否为Bug');
+      debugPrint('重复显示，请检查是否为Bug');
     }
     state.editDialogShowing = true;
     await showDialog(context: context, builder: (_) => EditDialog(node));

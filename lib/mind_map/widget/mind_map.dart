@@ -88,7 +88,6 @@ class MindMap<T extends MMNode> extends StatelessWidget {
     );
   }
 
-  // TODO 展开按钮放到节点处理
   static Widget _buildExpandButton({
     required VoidCallback onTap,
     required int childCount,
