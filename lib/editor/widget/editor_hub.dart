@@ -18,7 +18,7 @@ class EditorHub extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        if (state.transformingTimer.isActive)
+        if (!state.transformingTimer.isActive)
           Positioned(
             top: 0,
             left: 0,
@@ -33,40 +33,47 @@ class EditorHub extends StatelessWidget {
                   child: Builder(
                     builder: (context) {
                       final mindMap = context.watch<MMCntlr<Xnode>>();
-                      final curNode = mindMap.focusedNode();
+                      final node = mindMap.focusedNode();
                       return Row(
                         children: [
+                          // TODO 换图标
                           TextButton(
-                            onPressed: curNode == null
+                            onPressed: node == null
                                 ? null
                                 : () => mindMap.insertNodeUnder(
-                                    curNode,
+                                    node,
                                     newNode: Xnode.empty('新节点'),
                                   ),
                             child: Text('子节点'),
                           ),
                           TextButton(
                             onPressed:
-                                curNode != null &&
-                                    mindMap.getParentNode(curNode) != null
+                                node != null &&
+                                    mindMap.getParentNode(node) != null
                                 ? () => mindMap.insertNodeAfter(
-                                    curNode,
+                                    node,
                                     newNode: Xnode.empty('新节点'),
                                   )
                                 : null,
                             child: Text('兄弟节点'),
                           ),
-                          IconButton(
-                            onPressed: curNode == null
+                          TextButton(
+                            onPressed: node == null
                                 ? null
-                                : () => editor.showEditDialog(curNode, context),
+                                : () => mindMap.toggleExpanded(node),
+                            child: Text('展开收起'),
+                          ),
+                          IconButton(
+                            onPressed: node == null
+                                ? null
+                                : () => editor.showEditDialog(node, context),
                             icon: Icon(Icons.edit_outlined),
                           ),
                           IconButton(
                             onPressed:
-                                curNode != null &&
-                                    mindMap.getParentNode(curNode) != null
-                                ? () => mindMap.deleteNode(curNode)
+                                node != null &&
+                                    mindMap.getParentNode(node) != null
+                                ? () => mindMap.deleteNode(node)
                                 : null,
                             icon: Icon(Icons.delete_outline),
                           ),

@@ -66,8 +66,8 @@ class MindMap<T extends MMNode> extends StatelessWidget {
               : null,
           child: RenderMindMapWidget(
             theme: themeBuilder(path),
+            // key: UniqueKey(),
             key: keyBuilder(node),
-            // key: keyBuilder(node),
             nodeWidget: nodeWidgetBuilder(node, path),
             expandButton: node.subNodes.isEmpty
                 ? null
