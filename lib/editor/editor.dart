@@ -76,9 +76,9 @@ class Editor extends ChangeNotifier {
     }
   }
 
-  void setShowHub(bool value) {
+  void setTransforming(bool value) {
     notifyListeners();
-    state.showHub = value;
+    state.transforming = value;
   }
 
   void _onTransform() {

@@ -5,6 +5,6 @@ class MMTheme {
 
   const MMTheme({
     this.spacingBetweenSubTree = 4,
-    this.spacingWithSubTree = 20,
+    this.spacingWithSubTree = 30,
   });
 }

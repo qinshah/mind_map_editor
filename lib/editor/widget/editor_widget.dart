@@ -49,12 +49,9 @@ class _EditorWidgetState extends State<EditorWidget> {
               final logicSize = constraints.biggest / _editor.tCntlr.minScale;
               final h = (logicSize.width - _editor.state.mapSize.width) / 2;
               final v = (logicSize.height - _editor.state.mapSize.height) / 2;
-              final rootNode = context.select<Editor, Xnode>((value) {
-                return value.state.xmind.root;
-              });
               return InteractiveViewer.builder(
-                onInteractionStart: (_) => _editor.setShowHub(false),
-                onInteractionEnd: (_) => _editor.setShowHub(true),
+                onInteractionStart: (_) => _editor.setTransforming(true),
+                onInteractionEnd: (_) => _editor.setTransforming(false),
                 transformationController: _editor.tCntlr,
                 minScale: _editor.tCntlr.minScale,
                 maxScale: _editor.tCntlr.maxScale,
@@ -66,19 +63,26 @@ class _EditorWidgetState extends State<EditorWidget> {
                   v.clamp(0, 1 / 0),
                 ),
                 builder: (context, _) {
+                  final editorState = context.watch<Editor>().state;
                   return SizeChangeNotifier(
                     onSizeChange: _editor.updateMapSize,
                     child: MindMap<Xnode>.root(
-                      rootNode,
+                      editorState.xmind.root,
                       cntlr: _mmCntlr,
                       nodeWidgetBuilder: (node, path) {
                         return XnodeWidget(
                           node,
+                          key: Key(node.id),
                           theme: _buildNodeTheme(path),
                           cntlr: _mmCntlr,
                         );
                       },
                       themeBuilder: _buildTheme,
+                      keyBuilder: (Xnode node) {
+                        return editorState.transforming
+                            ? Key(node.id)
+                            : UniqueKey();
+                      },
                     ),
                   );
                 },
@@ -93,9 +97,9 @@ class _EditorWidgetState extends State<EditorWidget> {
 
   MMTheme _buildTheme(List<int> path) => switch (path.length) {
     // 根节点
-    0 => MMTheme(spacingBetweenSubTree: 20, spacingWithSubTree: 40),
+    0 => MMTheme(spacingBetweenSubTree: 20, spacingWithSubTree: 50),
     // 根节点的子节点
-    1 => MMTheme(spacingBetweenSubTree: 10, spacingWithSubTree: 30),
+    1 => MMTheme(spacingBetweenSubTree: 10, spacingWithSubTree: 40),
     // 后续节点
     int() => MMTheme(),
   };

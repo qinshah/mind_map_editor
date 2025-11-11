@@ -18,7 +18,7 @@ class EditorHub extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        if (state.showHub)
+        if (!state.transforming)
           Positioned(
             top: 0,
             left: 0,

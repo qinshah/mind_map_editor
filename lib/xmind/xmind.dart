@@ -60,6 +60,9 @@ class Xnode extends MMNode {
 
   @override
   List<Xnode> get subNodes => children.attached;
+
+  @override
+  String toString() => title;
 }
 
 class XnodeImg {
