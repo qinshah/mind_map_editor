@@ -72,6 +72,7 @@ class MindMap<T extends MMNode> extends StatelessWidget {
             expandButton: node.subNodes.isEmpty
                 ? null
                 : _buildExpandButton(
+                    color: Theme.of(context).primaryColor,
                     onTap: () => cntlr.toggleExpanded(node),
                     childCount: node.subNodes.length,
                   ),
@@ -91,13 +92,14 @@ class MindMap<T extends MMNode> extends StatelessWidget {
   static Widget _buildExpandButton({
     required VoidCallback onTap,
     required int childCount,
+    Color? color,
   }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(9999),
+    return GestureDetector(
       onTap: onTap,
-      child: SizedBox(
+      child: Container(
         width: 20,
         height: 20,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         child: Center(child: Text('$childCount')),
       ),
     );

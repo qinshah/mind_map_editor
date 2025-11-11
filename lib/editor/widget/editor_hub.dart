@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:mind_map_editor/xmind/xmind.dart';
 import 'package:mind_map_editor/editor/editor.dart';
 import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
@@ -40,7 +41,7 @@ class EditorHub extends StatelessWidget {
                           SizedBox(width: 8),
                           _button(
                             '子节点',
-                            Icons.add,
+                            LucideIcons.git_commit_vertical,
                             onTap: node == null
                                 ? null
                                 : () => mindMap.insertNodeUnder(
@@ -50,7 +51,7 @@ class EditorHub extends StatelessWidget {
                           ),
                           _button(
                             '同级节点',
-                            Icons.add,
+                            LucideIcons.git_pull_request,
                             onTap:
                                 node != null &&
                                     mindMap.getParentNode(node) != null
@@ -65,25 +66,28 @@ class EditorHub extends StatelessWidget {
                                 ? '收起'
                                 : '展开',
                             node == null || mindMap.getExpanded(node)
-                                ? Icons.expand_more
-                                : Icons.expand_less,
+                                ? LucideIcons.minimize_2
+                                : LucideIcons.maximize_2,
                             onTap: node == null || node.subNodes.isEmpty
                                 ? null
                                 : () => mindMap.toggleExpanded(node),
                           ),
-                          IconButton(
-                            onPressed: node == null
+                          _button(
+                            '编辑',
+                            Icons.edit_outlined,
+                            onTap: node == null
                                 ? null
                                 : () => editor.showEditDialog(node, context),
-                            icon: Icon(Icons.edit_outlined),
                           ),
-                          IconButton(
-                            onPressed:
+                          _button(
+                            '删除',
+                            LucideIcons.trash,
+                            color:  Colors.orange,
+                            onTap:
                                 node != null &&
                                     mindMap.getParentNode(node) != null
                                 ? () => mindMap.deleteNode(node)
                                 : null,
-                            icon: Icon(Icons.delete_outline),
                           ),
                           VerticalDivider(),
                           IconButton(
@@ -135,8 +139,14 @@ class EditorHub extends StatelessWidget {
     );
   }
 
-  Widget _button(String title, IconData icon, {VoidCallback? onTap}) {
+  Widget _button(
+    String title,
+    IconData icon, {
+    VoidCallback? onTap,
+    Color? color,
+  }) {
     return TextButton(
+      style: TextButton.styleFrom(foregroundColor: color),
       onPressed: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
