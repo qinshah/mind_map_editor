@@ -76,21 +76,34 @@ class Editor extends ChangeNotifier {
     }
   }
 
-  void setTransforming(bool value) {
-    notifyListeners();
-    state.transforming = value;
+  void _setTransforming() {
+    final wasTransforming = state.transformingTimer.isActive;
+    state.transformingTimer.cancel();
+    state.transformingTimer = Timer(Durations.short1, () {
+      notifyListeners();
+      // state.transformingTimer.isActive == false
+    });
+    if (!wasTransforming) {
+      notifyListeners();
+      // state.transformingTimer.isActive == true
+    }
   }
 
   void _onTransform() {
+    _setZoom();
+    _setTransforming();
+  }
+
+  void _setZoom() {
     final zoom = (tCntlr.getCurScale() * 100).round();
     if (zoom == state.zoom) return;
     // 重新计时
     state.scalingTimer.cancel();
-    state.scalingTimer = Timer(
-      const Duration(seconds: 1),
-      () => notifyListeners(),
-    );
     notifyListeners();
+    state.scalingTimer = Timer(const Duration(seconds: 1), () {
+      notifyListeners();
+      // state.scalingTimer.isActive == false
+    });
     state.zoom = zoom;
   }
 

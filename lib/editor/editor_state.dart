@@ -8,7 +8,7 @@ class EditorState {
   Timer scalingTimer = Timer(Duration.zero, () {})..cancel();
 
   int zoom = 100;
-  bool transforming = false;
+  Timer transformingTimer = Timer(Duration.zero, () {})..cancel();
   bool editDialogShowing = false;
 
   Size mapSize = Size.zero;

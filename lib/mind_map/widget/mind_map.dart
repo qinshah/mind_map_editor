@@ -67,6 +67,7 @@ class MindMap<T extends MMNode> extends StatelessWidget {
           child: RenderMindMapWidget(
             theme: themeBuilder(path),
             key: keyBuilder(node),
+            // key: keyBuilder(node),
             nodeWidget: nodeWidgetBuilder(node, path),
             expandButton: node.subNodes.isEmpty
                 ? null
@@ -107,7 +108,7 @@ class MindMap<T extends MMNode> extends StatelessWidget {
 class RenderMindMapWidget extends MultiChildRenderObjectWidget {
   const RenderMindMapWidget({
     required this.theme,
-    super.key,
+    required super.key,
     required this.nodeWidget,
     required this.subtrees,
     required this.expanded,
@@ -239,7 +240,7 @@ class RenderMindMap extends RenderBox
         subtree = parentData.nextSibling;
       }
     }
-    drawLine(context.canvas, lienFrom, lienFrom + Offset(3, 0));
+    drawLine(context.canvas, lienFrom, lienFrom + Offset(8, 0));
     context.paintChild(
       expandButton,
       (expandButton.parentData as MindMapParentData).offset + offset,

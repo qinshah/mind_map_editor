@@ -50,8 +50,6 @@ class _EditorWidgetState extends State<EditorWidget> {
               final h = (logicSize.width - _editor.state.mapSize.width) / 2;
               final v = (logicSize.height - _editor.state.mapSize.height) / 2;
               return InteractiveViewer.builder(
-                onInteractionStart: (_) => _editor.setTransforming(true),
-                onInteractionEnd: (_) => _editor.setTransforming(false),
                 transformationController: _editor.tCntlr,
                 minScale: _editor.tCntlr.minScale,
                 maxScale: _editor.tCntlr.maxScale,
@@ -79,7 +77,7 @@ class _EditorWidgetState extends State<EditorWidget> {
                       },
                       themeBuilder: _buildTheme,
                       keyBuilder: (Xnode node) {
-                        return editorState.transforming
+                        return editorState.transformingTimer.isActive
                             ? Key(node.id)
                             : UniqueKey();
                       },
