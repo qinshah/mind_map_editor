@@ -18,7 +18,7 @@ class EditorHub extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        if (!state.transformingTimer.isActive)
+        if (!state.interacting)
           Positioned(
             top: 0,
             left: 0,
@@ -27,6 +27,7 @@ class EditorHub extends StatelessWidget {
             child: ColoredBox(
               color: theme.appBarTheme.backgroundColor!,
               child: SingleChildScrollView(
+                key: const PageStorageKey('EditorHub'),
                 scrollDirection: Axis.horizontal,
                 child: FocusScope(
                   canRequestFocus: false,

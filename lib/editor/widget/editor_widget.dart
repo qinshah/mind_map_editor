@@ -50,6 +50,8 @@ class _EditorWidgetState extends State<EditorWidget> {
               final h = (logicSize.width - _editor.state.mapSize.width) / 2;
               final v = (logicSize.height - _editor.state.mapSize.height) / 2;
               return InteractiveViewer.builder(
+                onInteractionStart: _editor.onInteractionStart,
+                onInteractionEnd: _editor.onInteractionEnd,
                 transformationController: _editor.tCntlr,
                 minScale: _editor.tCntlr.minScale,
                 maxScale: _editor.tCntlr.maxScale,

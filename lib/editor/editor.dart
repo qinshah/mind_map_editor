@@ -163,4 +163,13 @@ class Editor extends ChangeNotifier {
     save();
     mMCnltr.rebuild();
   }
+
+  void onInteractionStart(ScaleStartDetails details) => _setInteracting(true);
+
+  void onInteractionEnd(ScaleEndDetails details) => _setInteracting(false);
+
+  void _setInteracting(bool value) {
+    notifyListeners();
+    state.interacting = value;
+  }
 }
