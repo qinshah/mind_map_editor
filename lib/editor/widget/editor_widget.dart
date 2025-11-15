@@ -50,7 +50,9 @@ class _EditorWidgetState extends State<EditorWidget> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 _editor.tCntlr.viewportSize = constraints.biggest;
-                final graph = context.watch<Editor>().graph;
+                final graph = context.select<Editor, Graph?>(
+                  (editor) => editor.graph,
+                );
                 if (graph == null) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -66,7 +68,7 @@ class _EditorWidgetState extends State<EditorWidget> {
                     return XnodeWidget(
                       node as Xnode,
                       onTap: () => _graphCnltr.toggleNodeExpanded(graph, node),
-                      theme: _buildNodeTheme([0,0]),// TODO: 节点主题
+                      theme: _buildNodeTheme([0, 0]), // TODO: 节点主题
                     );
                   },
                 );
