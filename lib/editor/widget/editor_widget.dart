@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart';
 import 'package:mind_map_editor/editor/editor.dart';
 import 'package:mind_map_editor/editor/widget/editor_hub.dart';
+import 'package:mind_map_editor/xmind/widget/xnode_widget.dart';
 import 'package:mind_map_editor/xmind/xmind.dart';
+import 'package:mind_map_editor/xmind/xnode_theme.dart';
 import 'package:provider/provider.dart';
 
 class EditorWidget extends StatefulWidget {
@@ -60,20 +62,13 @@ class _EditorWidgetState extends State<EditorWidget> {
                     _builder,
                     TreeEdgeRenderer(_builder),
                   ),
-                  builder: (Node node) => GestureDetector(
-                    onTap: () => _graphCnltr.toggleNodeExpanded(graph, node),
-                    child: Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
-                        boxShadow: [
-                          BoxShadow(color: Colors.blue[100]!, spreadRadius: 1),
-                        ],
-                      ),
-                      child: Text((node as Xnode).title),
-                    ),
-                  ),
+                  builder: (Node node) {
+                    return XnodeWidget(
+                      node as Xnode,
+                      onTap: () => _graphCnltr.toggleNodeExpanded(graph, node),
+                      theme: _buildNodeTheme([0,0]),// TODO: 节点主题
+                    );
+                  },
                 );
               },
             ),
@@ -93,44 +88,44 @@ class _EditorWidgetState extends State<EditorWidget> {
   //   int() => MMTheme(),
   // };
 
-  // XnodeTheme _buildNodeTheme(List<int> path) {
-  //   final depth = path.length;
-  //   final color =
-  //       // 根节点
-  //       depth == 0
-  //       ? Theme.of(context).primaryColor
-  //       // 控制相同分支色调一致
-  //       : Colors.primaries[path[0] % Colors.primaries.length].withAlpha(
-  //           depth == 1 ? 200 : 144, // 深度1和后续深度
-  //         );
-  //   final textColor = color.computeLuminance() > 0.5
-  //       ? Colors.black
-  //       : Colors.white;
-  //   return switch (depth) {
-  //     // 根节点
-  //     0 => XnodeTheme(
-  //       color: color,
-  //       textStyle: TextStyle(
-  //         color: textColor,
-  //         fontSize: 24,
-  //         fontWeight: FontWeight.w800,
-  //       ),
-  //       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-  //     ),
-  //     // 一级分支节点
-  //     1 => XnodeTheme(
-  //       color: color,
-  //       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-  //       textStyle: TextStyle(
-  //         color: textColor,
-  //         fontSize: 18,
-  //         fontWeight: FontWeight.w600,
-  //       ),
-  //     ),
-  //     int() => XnodeTheme(
-  //       color: color,
-  //       textStyle: TextStyle(color: textColor),
-  //     ),
-  //   };
-  // }
+  XnodeTheme _buildNodeTheme(List<int> path) {
+    final depth = path.length;
+    final color =
+        // 根节点
+        depth == 0
+        ? Theme.of(context).primaryColor
+        // 控制相同分支色调一致
+        : Colors.primaries[path[0] % Colors.primaries.length].withAlpha(
+            depth == 1 ? 200 : 144, // 深度1和后续深度
+          );
+    final textColor = color.computeLuminance() > 0.5
+        ? Colors.black
+        : Colors.white;
+    return switch (depth) {
+      // 根节点
+      0 => XnodeTheme(
+        color: color,
+        textStyle: TextStyle(
+          color: textColor,
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+      ),
+      // 一级分支节点
+      1 => XnodeTheme(
+        color: color,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        textStyle: TextStyle(
+          color: textColor,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      int() => XnodeTheme(
+        color: color,
+        textStyle: TextStyle(color: textColor),
+      ),
+    };
+  }
 }
