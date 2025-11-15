@@ -3,20 +3,20 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:graphview/GraphView.dart';
 import 'package:mind_map_editor/common/path_const.dart';
 import 'package:mind_map_editor/common/function/file_manager.dart';
 import 'package:mind_map_editor/editor/editor_state.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:mind_map_editor/editor/widget/edit_dialog.dart';
-import 'package:mind_map_editor/mind_map/m_m_cntlr.dart';
 import 'package:mind_map_editor/xmind/xmind.dart';
 import 'package:mind_map_editor/editor/my_t_cntlr.dart';
 import 'package:share_plus/share_plus.dart';
 
 class Editor extends ChangeNotifier {
   final state = EditorState();
-  final tCntlr = MyTCntlr();
-  late final mMCnltr = MMCntlr<Xnode>(onMapChanged: (_) => save());
+  final tCntlr = MyTCntlr(minScale: 0.01, maxScale: 10);
+  Graph? graph;
+  late final graphCnltr = GraphViewController(transformationController: tCntlr);
   final BuildContext Function() getContext;
   final dataFile = FM.supportPathFile(
     PathConst.root.join([PathConst.dataName]),
@@ -24,10 +24,18 @@ class Editor extends ChangeNotifier {
 
   Editor({required this.getContext});
 
-  init() {
-    _loadLocalData();
+  init() async {
     tCntlr.addListener(_onTransform);
     HardwareKeyboard.instance.addHandler(onKeyEvent);
+    _loadLocalData();
+  }
+
+  void _addTree(Xnode root) {
+    if (graph == null) throw Exception('graph怎么是null');
+    for (final subNode in root.subNodes) {
+      graph!.addEdge(root, subNode);
+      _addTree(subNode);
+    }
   }
 
   @override
@@ -38,42 +46,43 @@ class Editor extends ChangeNotifier {
   }
 
   bool onKeyEvent(KeyEvent event) {
-    final node = mMCnltr.focusedNode();
-    if (node == null || event is! KeyDownEvent) return false;
-    final shiftAndSpace =
-        HardwareKeyboard.instance.isShiftPressed &&
-        event.logicalKey == LogicalKeyboardKey.space;
-    if (state.editDialogShowing) {
-      if (shiftAndSpace) {
-        Navigator.of(getContext()).pop();
-        return true;
-      }
-      return false;
-    }
-    final parent = mMCnltr.getParentNode(node);
-    switch (event.logicalKey) {
-      case LogicalKeyboardKey.escape:
-        mMCnltr.foucs(null);
-        return true;
-      case LogicalKeyboardKey.tab:
-        mMCnltr.insertNodeUnder(node, newNode: Xnode.empty('新节点'));
-        return true;
-      case LogicalKeyboardKey.enter:
-        parent == null
-            ? mMCnltr.insertNodeUnder(node, newNode: Xnode.empty('新节点'))
-            : mMCnltr.insertNodeAfter(node, newNode: Xnode.empty('新节点'));
-        return true;
-      case LogicalKeyboardKey.delete || LogicalKeyboardKey.backspace:
-        if (parent == null) return false;
-        mMCnltr.deleteNode(node);
-        return true;
-      default:
-        if (shiftAndSpace) {
-          showEditDialog(node, getContext());
-          return true;
-        }
-        return false;
-    }
+    return false;
+    // final node = mMCnltr.focusedNode();
+    // if (node == null || event is! KeyDownEvent) return false;
+    // final shiftAndSpace =
+    //     HardwareKeyboard.instance.isShiftPressed &&
+    //     event.logicalKey == LogicalKeyboardKey.space;
+    // if (state.editDialogShowing) {
+    //   if (shiftAndSpace) {
+    //     Navigator.of(getContext()).pop();
+    //     return true;
+    //   }
+    //   return false;
+    // }
+    // final parent = mMCnltr.getParentNode(node);
+    // switch (event.logicalKey) {
+    //   case LogicalKeyboardKey.escape:
+    //     mMCnltr.foucs(null);
+    //     return true;
+    //   case LogicalKeyboardKey.tab:
+    //     mMCnltr.insertNodeUnder(node, newNode: Xnode.empty('新节点'));
+    //     return true;
+    //   case LogicalKeyboardKey.enter:
+    //     parent == null
+    //         ? mMCnltr.insertNodeUnder(node, newNode: Xnode.empty('新节点'))
+    //         : mMCnltr.insertNodeAfter(node, newNode: Xnode.empty('新节点'));
+    //     return true;
+    //   case LogicalKeyboardKey.delete || LogicalKeyboardKey.backspace:
+    //     if (parent == null) return false;
+    //     mMCnltr.deleteNode(node);
+    //     return true;
+    //   default:
+    //     if (shiftAndSpace) {
+    //       showEditDialog(node, getContext());
+    //       return true;
+    //     }
+    //     return false;
+    // }
   }
 
   void _setTransforming() {
@@ -91,7 +100,7 @@ class Editor extends ChangeNotifier {
 
   void _onTransform() {
     _setZoom();
-    _setTransforming();
+    // _setTransforming();
   }
 
   void _setZoom() {
@@ -129,6 +138,8 @@ class Editor extends ChangeNotifier {
     final xmind = Xmind.fromJson(jsonDecode(await dataFile.readAsString()));
     notifyListeners();
     state.xmind = xmind;
+    graph = Graph()..isTree = true;
+    _addTree(xmind.root);
   }
 
   Future<void> export() async {
@@ -154,14 +165,14 @@ class Editor extends ChangeNotifier {
   }
 
   Future<void> showEditDialog(Xnode node, BuildContext context) async {
-    if (state.editDialogShowing) {
-      debugPrint('重复显示，请检查是否为Bug');
-    }
-    state.editDialogShowing = true;
-    await showDialog(context: context, builder: (_) => EditDialog(node));
-    state.editDialogShowing = false;
-    save();
-    mMCnltr.rebuild();
+    // if (state.editDialogShowing) {
+    //   debugPrint('重复显示，请检查是否为Bug');
+    // }
+    // state.editDialogShowing = true;
+    // await showDialog(context: context, builder: (_) => EditDialog(node));
+    // state.editDialogShowing = false;
+    // save();
+    // mMCnltr.rebuild();
   }
 
   void onInteractionStart(ScaleStartDetails details) => _setInteracting(true);

@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 class MyTCntlr extends TransformationController {
-  Size viewportSize = Size.zero;
+  Size? viewportSize;
   final double minScale;
   final double maxScale;
 
@@ -22,11 +22,14 @@ class MyTCntlr extends TransformationController {
 
   /// 缩放至
   void zoomTo(double targetScale) {
+    if (viewportSize == null) {
+      throw Exception('请使用LayoutBuilder包裹组件并更新$runtimeType的viewportSize');
+    }
     targetScale = targetScale.clamp(minScale, maxScale);
     // 1. 拿到 viewport 中心对应的逻辑坐标
     final Offset viewerCenter = Offset(
-      viewportSize.width / 2,
-      viewportSize.height / 2,
+      viewportSize!.width / 2,
+      viewportSize!.height / 2,
     );
     final Offset canvasCenter = toScene(viewerCenter); // 关键：映射到子树坐标系
     final double ratio = targetScale / getCurScale(); // 关键：只乘一次

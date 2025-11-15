@@ -1,6 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:graphview/GraphView.dart';
 import 'package:mind_map_editor/xmind/xmind_const.dart';
 import 'package:mind_map_editor/common/path_const.dart';
-import 'package:mind_map_editor/mind_map/m_m_node.dart';
 import 'package:mind_map_editor/common/function/file_manager.dart';
 
 // 扩展
@@ -15,8 +16,7 @@ extension XnodeExt on Xnode {
   }
 }
 
-class Xnode extends MMNode {
-  @override
+class Xnode extends Node {
   final String id;
   String title;
   bool titleUnedited;
@@ -30,13 +30,20 @@ class Xnode extends MMNode {
     required this.title,
     this.titleUnedited = false,
     required this.children,
-  });
+    // ignore: deprecated_member_use
+  }) : super(null) {
+    key = ValueKey(id);
+  }
 
   Xnode.empty(this.title)
     : id = XmindConst.uuid.v4(),
       titleUnedited = false,
       children = Children(attached: []),
-      image = null;
+      image = null,
+      // ignore: deprecated_member_use
+      super(null) {
+    key = ValueKey(id);
+  }
 
   factory Xnode.fromJson(Map<String, dynamic> json) {
     final node = Xnode(
@@ -58,7 +65,6 @@ class Xnode extends MMNode {
     };
   }
 
-  @override
   List<Xnode> get subNodes => children.attached;
 
   @override
