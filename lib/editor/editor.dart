@@ -8,6 +8,7 @@ import 'package:mind_map_editor/common/path_const.dart';
 import 'package:mind_map_editor/common/function/file_manager.dart';
 import 'package:mind_map_editor/editor/editor_state.dart';
 import 'package:file_selector/file_selector.dart';
+import 'package:mind_map_editor/editor/widget/edit_dialog.dart';
 import 'package:mind_map_editor/xmind/xmind.dart';
 import 'package:mind_map_editor/editor/my_t_cntlr.dart';
 import 'package:share_plus/share_plus.dart';
@@ -15,7 +16,7 @@ import 'package:share_plus/share_plus.dart';
 class Editor extends ChangeNotifier {
   final state = EditorState();
   final tCntlr = MyTCntlr(minScale: 0.01, maxScale: 10);
-  Graph? graph;
+  Graph graph = Graph()..isTree = true;
   late final graphCnltr = GraphViewController(transformationController: tCntlr);
   final BuildContext Function() getContext;
   final dataFile = FM.supportPathFile(
@@ -30,11 +31,25 @@ class Editor extends ChangeNotifier {
     _loadLocalData();
   }
 
-  void _addTree(Xnode root) {
-    if (graph == null) throw Exception('graph怎么是null');
-    for (final subNode in root.subNodes) {
-      graph!.addEdge(root, subNode);
-      _addTree(subNode);
+  Future<void> _loadLocalData() async {
+    if (!await dataFile.exists()) {
+      await dataFile.create(recursive: true);
+      return;
+    }
+    final xmind = Xmind.fromJson(jsonDecode(await dataFile.readAsString()));
+    notifyListeners();
+    state.xmind = xmind;
+    graph = Graph()..isTree = true;
+    _addTree(xmind.root, []);
+  }
+
+  void _addTree(Xnode root, List<int> path) {
+    root.path = path;
+    for (int i = 0; i < root.subNodes.length; i++) {
+      final subNode = root.subNodes[i];
+      subNode.parent = root;
+      graph.addEdge(root, subNode);
+      _addTree(subNode, [...path, i]);
     }
   }
 
@@ -85,22 +100,8 @@ class Editor extends ChangeNotifier {
     // }
   }
 
-  void _setTransforming() {
-    final wasTransforming = state.transformingTimer.isActive;
-    state.transformingTimer.cancel();
-    state.transformingTimer = Timer(Durations.short1, () {
-      notifyListeners();
-      // state.transformingTimer.isActive == false
-    });
-    if (!wasTransforming) {
-      notifyListeners();
-      // state.transformingTimer.isActive == true
-    }
-  }
-
   void _onTransform() {
     _setZoom();
-    // _setTransforming();
   }
 
   void _setZoom() {
@@ -130,20 +131,8 @@ class Editor extends ChangeNotifier {
     _loadLocalData();
   }
 
-  Future<void> _loadLocalData() async {
-    if (!await dataFile.exists()) {
-      await dataFile.create(recursive: true);
-      return;
-    }
-    final xmind = Xmind.fromJson(jsonDecode(await dataFile.readAsString()));
-    notifyListeners();
-    state.xmind = xmind;
-    graph = Graph()..isTree = true;
-    _addTree(xmind.root);
-  }
-
   Future<void> export() async {
-    await save();
+    await _save();
     final tempMindPath = FM.tempPath('导出.mind');
     await FM.encodeDirToArchive(
       tempMindPath,
@@ -152,35 +141,50 @@ class Editor extends ChangeNotifier {
     Share.shareXFiles([XFile(tempMindPath)]);
   }
 
-  void updateMapSize(Size value) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-      state.mapSize = value;
-    });
-  }
-
-  Future<void> save() async {
+  Future<void> _save() async {
     final json = jsonEncode(state.xmind.toJson());
     await dataFile.writeAsString(json);
   }
 
   Future<void> showEditDialog(Xnode node, BuildContext context) async {
-    // if (state.editDialogShowing) {
-    //   debugPrint('重复显示，请检查是否为Bug');
-    // }
-    // state.editDialogShowing = true;
-    // await showDialog(context: context, builder: (_) => EditDialog(node));
-    // state.editDialogShowing = false;
-    // save();
-    // mMCnltr.rebuild();
+    if (state.editDialogShowing) {
+      debugPrint('重复显示，请检查是否为Bug');
+    }
+    final oldTitle = node.title;
+    state.editDialogShowing = true;
+    await showDialog(context: context, builder: (_) => EditDialog(node));
+    state.editDialogShowing = false;
+    if (node.title == oldTitle) return;
+    _save();
+    notifyListeners();
+    state.changedFlag = !state.changedFlag;
   }
 
-  void onInteractionStart(ScaleStartDetails details) => _setInteracting(true);
-
-  void onInteractionEnd(ScaleEndDetails details) => _setInteracting(false);
-
-  void _setInteracting(bool value) {
+  void focus(Xnode node) {
     notifyListeners();
-    state.interacting = value;
+    state.focusedNode = node;
+  }
+
+  void toggleExpanded(Xnode node) {
+    graphCnltr.toggleNodeExpanded(graph, node, animate: true);
+    focus(node);
+  }
+
+  void insertNodeUnder(Xnode node, {required Xnode newNode}) {
+    newNode.parent = node;
+    newNode.path = [...node.path, node.subNodes.length];
+    node.subNodes.add(newNode);
+    _save();
+    graph.addEdge(node, newNode);
+    focus(newNode);
+    state.changedFlag = !state.changedFlag;
+  }
+
+  void deleteSubNode(Xnode node, {required Xnode parent}) {
+    parent.subNodes.remove(node);
+    _save();
+    graph.removeNode(node);
+    focus(parent);
+    state.changedFlag = !state.changedFlag;
   }
 }

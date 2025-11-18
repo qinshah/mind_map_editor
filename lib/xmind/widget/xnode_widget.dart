@@ -7,9 +7,7 @@ import 'package:mind_map_editor/editor/editor.dart';
 import 'package:provider/provider.dart';
 
 class XnodeWidget extends StatefulWidget {
-  const XnodeWidget(this.node, {super.key, this.onTap, required this.theme});
-
-  final VoidCallback? onTap;
+  const XnodeWidget(this.node, {super.key, required this.theme});
 
   final Xnode node;
 
@@ -26,34 +24,49 @@ class _XnodeWidgetState extends State<XnodeWidget> {
 
   final _borderRadius = BorderRadius.circular(6);
 
-  // late final _mmCntlr = widget.cntlr;
+  late final _mTheme = Theme.of(context);
 
-  final _focused = false;
+  bool _focused = false;
+
   @override
   Widget build(BuildContext context) {
-    // _focused = _mmCntlr.getFocused(_node);
-    return DragTarget<Xnode>(
-      onMove: (details) {
-        final draggingNode = details.data;
-        if (draggingNode.id == _node.id) return;
-        // TODO 通过拖拽实现思维导图节点的移动
-        // print(draggingNode.title);
-        // print(details.offset);
+    final focusedNode = context.select<Editor, Xnode?>((editor) {
+      return editor.state.focusedNode;
+    });
+    _focused = _node.id == focusedNode?.id;
+    return GestureDetector(
+      onTap: () {
+        if (!_focused) _editor.focus(_node);
       },
-      builder: (_, _, _) {
-        return LongPressDraggable(
-          data: _node,
-          feedback: Transform.scale(
-            scale: _editor.state.zoom / 100,
-            child: Material(
-              color: Colors.transparent,
-              child: _buildChild(_theme, _borderRadius, alpha: 200),
+      child: DragTarget<Xnode>(
+        onMove: (details) {
+          final draggingNode = details.data;
+          if (draggingNode.id == _node.id) return;
+          // TODO 通过拖拽实现思维导图节点的移动
+          // print(draggingNode.title);
+          // print(details.offset);
+        },
+        builder: (_, _, _) {
+          return LongPressDraggable(
+            data: _node,
+            feedback: ListenableBuilder(
+              listenable: _editor,
+              builder: (context, _) {
+                final scale = _editor.state.zoom / 100;
+                return Transform.scale(
+                  scale: scale,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: _buildChild(_theme, _borderRadius, alpha: 200),
+                  ),
+                );
+              },
             ),
-          ),
-          childWhenDragging: _buildChild(_theme, _borderRadius, alpha: 50),
-          child: _buildChild(_theme, _borderRadius),
-        );
-      },
+            childWhenDragging: _buildChild(_theme, _borderRadius, alpha: 50),
+            child: _buildChild(_theme, _borderRadius),
+          );
+        },
+      ),
     );
   }
 
@@ -82,52 +95,66 @@ class _XnodeWidgetState extends State<XnodeWidget> {
       ImgAlign.right || ImgAlign.bottom => contents.reversed.toList(),
       _ => contents,
     };
-    return InkWell(
-      borderRadius: borderRadius,
-      onTap: () {
-        widget.onTap?.call();
-      },
-      child: IgnorePointer(
-        ignoring: !_focused,
-        child: GestureDetector(
-          onTap: () {
-            _editor.showEditDialog(_node, context);
-            // await showDialog(
-            //   context: context,
-            //   builder: (_) => EditDialog(_node),
-            // );
-            // _mmCntlr.rebuild();
-            // _editor.save();
-          },
-          child: Container(
-            padding: const EdgeInsets.all(1),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: _focused
-                    ? Theme.of(context).primaryColor
-                    : Colors.transparent,
-                width: 2,
-              ),
-              borderRadius: borderRadius,
-            ),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: theme.color.withAlpha(alpha ?? 255),
-                borderRadius: borderRadius,
-              ),
-              child: Padding(
-                padding: theme.padding,
-                child: Flex(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: vertical
-                      ? CrossAxisAlignment.start
-                      : CrossAxisAlignment.center,
-                  direction: vertical ? Axis.vertical : Axis.horizontal,
-                  children: children,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        border: Border.all(
+          color: _focused ? Theme.of(context).primaryColor : Colors.transparent,
+          width: 2,
+        ),
+      ),
+      child: Container(
+        margin: const EdgeInsets.all(1),
+        decoration: BoxDecoration(
+          color: theme.color.withAlpha(alpha ?? 255),
+          borderRadius: borderRadius,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            IgnorePointer(
+              ignoring: !_focused,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => _editor.showEditDialog(_node, context),
+                child: Padding(
+                  padding: theme.padding.add(
+                    EdgeInsets.only(right: _node.subNodes.isNotEmpty ? 18 : 0),
+                  ),
+                  child: Flex(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: vertical
+                        ? CrossAxisAlignment.start
+                        : CrossAxisAlignment.center,
+                    direction: vertical ? Axis.vertical : Axis.horizontal,
+                    children: children,
+                  ),
                 ),
               ),
             ),
-          ),
+            if (_node.subNodes.isNotEmpty)
+              Positioned(
+                right: 5,
+                child: GestureDetector(
+                  onTap: () => _editor.toggleExpanded(_node),
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: _mTheme.primaryColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: _mTheme.colorScheme.onPrimary,
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      '${_node.subNodes.length}',
+                      style: TextStyle(color: _mTheme.colorScheme.onPrimary),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

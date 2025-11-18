@@ -50,14 +50,20 @@ class _EditorWidgetState extends State<EditorWidget> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 _editor.tCntlr.viewportSize = constraints.biggest;
-                final graph = context.select<Editor, Graph?>(
+                final graph = context.select<Editor, Graph>(
                   (editor) => editor.graph,
                 );
-                if (graph == null) {
+                if (!graph.hasNodes()) {
                   return const Center(child: CircularProgressIndicator());
                 }
+                // 监听rebuild
+                context.select<Editor, bool>(
+                  (editor) => editor.state.changedFlag,
+                );
                 return GraphView.builder(
-                  toggleAnimationDuration: Durations.short4,
+                  // 动画时长
+                  panAnimationDuration: Durations.short4,
+                  toggleAnimationDuration: Duration.zero,
                   controller: _graphCnltr,
                   graph: graph,
                   algorithm: BuchheimWalkerAlgorithm(
@@ -65,10 +71,10 @@ class _EditorWidgetState extends State<EditorWidget> {
                     TreeEdgeRenderer(_builder),
                   ),
                   builder: (Node node) {
+                    node as Xnode;
                     return XnodeWidget(
-                      node as Xnode,
-                      onTap: () => _graphCnltr.toggleNodeExpanded(graph, node),
-                      theme: _buildNodeTheme([0, 0]), // TODO: 节点主题
+                      node,
+                      theme: _buildNodeTheme(node.path),
                     );
                   },
                 );

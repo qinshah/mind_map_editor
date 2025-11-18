@@ -24,6 +24,10 @@ class Xnode extends Node {
 
   XnodeImg? image;
 
+  List<int> path = [];
+
+  Xnode? parent;
+
   Xnode({
     required this.id,
     required this.image,

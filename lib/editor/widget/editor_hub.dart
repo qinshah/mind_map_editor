@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:mind_map_editor/editor/editor.dart';
+import 'package:mind_map_editor/xmind/xmind.dart';
 import 'package:provider/provider.dart';
 
 class EditorHub extends StatelessWidget {
@@ -13,6 +15,7 @@ class EditorHub extends StatelessWidget {
     final editor = context.watch<Editor>();
     final state = editor.state;
     final tCntlr = editor.tCntlr;
+    final focusedNode = state.focusedNode;
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -33,57 +36,54 @@ class EditorHub extends StatelessWidget {
                     return Row(
                       children: [
                         SizedBox(width: 8),
-                        // _button(
-                        //   '子节点',
-                        //   LucideIcons.git_commit_vertical,
-                        //   onTap: node == null
-                        //       ? null
-                        //       : () => mindMap.insertNodeUnder(
-                        //           node,
-                        //           newNode: Xnode.empty('新节点'),
-                        //         ),
-                        // ),
-                        // _button(
-                        //   '同级节点',
-                        //   LucideIcons.git_pull_request,
-                        //   onTap:
-                        //       node != null &&
-                        //           mindMap.getParentNode(node) != null
-                        //       ? () => mindMap.insertNodeAfter(
-                        //           node,
-                        //           newNode: Xnode.empty('新节点'),
-                        //         )
-                        //       : null,
-                        // ),
-                        // _button(
-                        //   node == null || mindMap.getExpanded(node)
-                        //       ? '收起'
-                        //       : '展开',
-                        //   node == null || mindMap.getExpanded(node)
-                        //       ? LucideIcons.minimize_2
-                        //       : LucideIcons.maximize_2,
-                        //   onTap: node == null || node.subNodes.isEmpty
-                        //       ? null
-                        //       : () => mindMap.toggleExpanded(node),
-                        // ),
-                        // _button(
-                        //   '编辑',
-                        //   Icons.edit_outlined,
-                        //   onTap: node == null
-                        //       ? null
-                        //       : () => editor.showEditDialog(node, context),
-                        // ),
-                        // _button(
-                        //   '删除',
-                        //   LucideIcons.trash,
-                        //   color:  Colors.orange,
-                        //   onTap:
-                        //       node != null &&
-                        //           mindMap.getParentNode(node) != null
-                        //       ? () => mindMap.deleteNode(node)
-                        //       : null,
-                        // ),
-                        // VerticalDivider(),
+                        _button(
+                          '子节点',
+                          LucideIcons.git_commit_vertical,
+                          onTap: focusedNode == null
+                              ? null
+                              : () => editor.insertNodeUnder(
+                                  focusedNode,
+                                  newNode: Xnode.empty('新节点'),
+                                ),
+                        ),
+                        _button(
+                          '同级节点',
+                          LucideIcons.git_pull_request,
+                          onTap:
+                              focusedNode != null && focusedNode.parent != null
+                              ? () => editor.insertNodeUnder(
+                                  focusedNode.parent!,
+                                  newNode: Xnode.empty('新节点'),
+                                )
+                              : null,
+                        ),
+                        _button(
+                          '展开/收起',
+                          LucideIcons.chevrons_up,
+                          onTap:
+                              focusedNode == null ||
+                                  focusedNode.subNodes.isEmpty
+                              ? null
+                              : () => editor.toggleExpanded(focusedNode),
+                        ),
+                        _button(
+                          '编辑',
+                          Icons.edit_outlined,
+                          onTap: focusedNode == null
+                              ? null
+                              : () =>
+                                    editor.showEditDialog(focusedNode, context),
+                        ),
+                        _button(
+                          '删除',
+                          LucideIcons.trash,
+                          color: Colors.orange,
+                          onTap:
+                              focusedNode != null && focusedNode.parent != null
+                              ? () => editor.deleteSubNode(focusedNode, parent: focusedNode.parent!)
+                              : null,
+                        ),
+                        VerticalDivider(),
                         IconButton(
                           onPressed: state.zoom == tCntlr.maxScale * 100
                               ? null
